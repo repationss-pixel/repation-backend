@@ -22,7 +22,7 @@ const CATEGORIE_LABEL: Record<RestaurantCategorie, string> = {
 };
 
 const FILTERS = [
-  { label: "Tous",       match: (_: RestaurantCategorie) => true },
+  { label: "Tous",       match: () => true },
   { label: "Restaurant", match: (c: RestaurantCategorie) => c === "RESTAURANT" || c === "BRASSERIE" },
   { label: "Fast-food",  match: (c: RestaurantCategorie) => c === "FAST_FOOD" },
   { label: "Café",       match: (c: RestaurantCategorie) => c === "CAFE" || c === "BAR" || c === "BOULANGERIE" },

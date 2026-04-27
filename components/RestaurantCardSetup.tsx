@@ -20,12 +20,10 @@ const CARD_ELEMENT_OPTIONS = {
 
 function CardFormInner({
   clientSecret,
-  setupIntentClientSecret,
   restaurantId,
   onSuccess,
 }: {
   clientSecret: string;
-  setupIntentClientSecret: string;
   restaurantId: string;
   onSuccess: () => void;
 }) {
@@ -176,7 +174,6 @@ export default function RestaurantCardSetup({
         <Elements stripe={stripePromise} options={{ clientSecret }}>
           <CardFormInner
             clientSecret={clientSecret}
-            setupIntentClientSecret={clientSecret}
             restaurantId={restaurantId}
             onSuccess={onSuccess}
           />

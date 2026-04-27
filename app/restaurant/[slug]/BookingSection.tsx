@@ -209,7 +209,7 @@ export default function BookingSection({
           {canCancel() ? (
             <div className="space-y-2">
               <p className="text-xs text-gray-400">
-                Annulation gratuite jusqu'à 20 minutes avant votre réservation.
+                Annulation gratuite jusqu&apos;à 20 minutes avant votre réservation.
               </p>
               <button
                 onClick={handleCancel}
@@ -221,7 +221,7 @@ export default function BookingSection({
             </div>
           ) : (
             <p className="text-xs text-gray-400">
-              Le délai d'annulation gratuite est dépassé.
+              Le délai d&apos;annulation gratuite est dépassé.
             </p>
           )}
         </div>
