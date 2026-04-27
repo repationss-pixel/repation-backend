@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Utilisateurs ─────────────────────────────────────────────────────────────
+
+enum UserType {
+  PARTICULIER
+  RESTAURATEUR
+}
+
+model User {
+  id                    String        @id @default(cuid())
+  prenom                String
+  email                 String        @unique
+  phone                 String        @unique
+  phoneVerified         Boolean       @default(false)
+  type                  UserType      @default(PARTICULIER)
+  stripePaymentMethodId String?
+  createdAt             DateTime      @default(now())
+
+  reservations  Reservation[]
+  checkins      Checkin[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+// ─── Restaurants ──────────────────────────────────────────────────────────────
+
+enum RestaurantCategorie {
+  RESTAURANT
+  BRASSERIE
+  CAFE
+  BAR
+  FAST_FOOD
+  BOULANGERIE
+}
+
+model Restaurant {
+  id               String               @id @default(cuid())
+  nom              String
+  adresse          String
+  latitude         Float
+  longitude        Float
+  categorie        RestaurantCategorie
+  slug             String               @unique
+  ticketMoyen      Float         @default(35)
+  stripeCustomerId String?
+  restaurateurId   String?
+  createdAt        DateTime      @default(now())
+
+  reservations     Reservation[]
+  factures         Facture[]
+
+  @@index([slug])
+}
+
+// ─── Réservations ─────────────────────────────────────────────────────────────
+
+enum ReservationStatut {
+  EN_ATTENTE
+  CONFIRMEE
+  ANNULEE
+  TERMINEE
+  VALIDEE
+  NO_SHOW
+}
+
+model Reservation {
+  id                 String            @id @default(cuid())
+  userId             String
+  restaurantId       String
+  creneau            DateTime
+  annulationDeadline DateTime?         // 20 minutes avant le créneau
+  statut             ReservationStatut @default(EN_ATTENTE)
+  visitId            String?           // Partagé avec la réservation partenaire lors d'une visite certifiée
+  scanReminderSentAt DateTime?         // Horodatage du rappel QR envoyé à T+20 min
+  createdAt          DateTime          @default(now())
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  checkins     Checkin[]
+
+  @@index([userId])
+  @@index([restaurantId])
+  @@index([creneau])
+  @@index([visitId])
+}
+
+// ─── Check-ins ────────────────────────────────────────────────────────────────
+// Une visite est certifiée si :
+//   1. La réservation est CONFIRMEE
+//   2. Double scan QR effectué (validated = true)
+//   3. GPS dans un rayon de 100 m du restaurant
+
+model Checkin {
+  id            String      @id @default(cuid())
+  reservationId String
+  userId        String
+  timestamp     DateTime    @default(now())
+  latitude      Float
+  longitude     Float
+  // validated passe à true après le 2e scan QR avec GPS valide (<= 100 m)
+  validated     Boolean     @default(false)
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@index([userId])
+}
+
+// ─── Factures ─────────────────────────────────────────────────────────────────
+
+model Facture {
+  id                String     @id @default(cuid())
+  restaurantId      String
+  mois              Int        // 1–12
+  annee             Int
+  visitesCertifiees Int
+  montantHT         Float
+  montantTTC        Float
+  stripeChargeId    String?
+  payee             Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+
+  restaurant        Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, mois, annee])
+  @@index([restaurantId])
+}
