@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     payment_method: user.stripePaymentMethodId,
     confirm: true,
     off_session: true,
-    description: `Repation — Pénalité no-show — Utilisateur ${userId}`,
+    description: `Repation — Absence non justifiée — Utilisateur ${userId}`,
     metadata: { userId },
   })
 

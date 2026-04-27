@@ -39,7 +39,7 @@ export default function Confidentialite() {
           <ul>
             <li>Gestion des réservations et mise en relation entre convives.</li>
             <li>Facturation des restaurateurs partenaires.</li>
-            <li>Prélèvement des frais de no-show (1€) en cas d'absence non annulée.</li>
+            <li>Prélèvement des frais d'absence non justifiée (1€) en cas d'absence non annulée.</li>
             <li>Envoi d'emails transactionnels (confirmation de réservation, rappels).</li>
             <li>Amélioration du service Repation.</li>
           </ul>
@@ -47,7 +47,7 @@ export default function Confidentialite() {
 
         <Section titre="4. Base légale">
           Les traitements sont fondés sur l'exécution d'un contrat (inscription, réservation) et
-          sur notre intérêt légitime (lutte contre les no-shows, amélioration du service).
+          sur notre intérêt légitime (lutte contre les absences non justifiées, amélioration du service).
           Le traitement des données de paiement est fondé sur l'exécution du contrat.
         </Section>
 

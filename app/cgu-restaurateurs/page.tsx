@@ -47,7 +47,7 @@ export default function CGURestaurateurs() {
               <strong>Annulation gratuite</strong> : jusqu'à 20 minutes avant l'heure du créneau réservé.
             </li>
             <li>
-              <strong>Frais de no-show</strong> : en cas d'annulation tardive ou d'absence non signalée,
+              <strong>Frais d'absence non justifiée</strong> : en cas d'annulation tardive ou d'absence non signalée,
               1€ est prélevé sur la carte du convive — ce montant ne revient pas au restaurateur.
             </li>
             <li>

@@ -45,7 +45,7 @@ export default function CGU() {
               <strong>Annulation gratuite</strong> : jusqu'à 20 minutes avant l'heure du créneau réservé.
             </li>
             <li>
-              <strong>Frais de no-show</strong> : en cas d'annulation tardive (moins de 20 minutes avant)
+              <strong>Frais d'absence non justifiée</strong> : en cas d'annulation tardive (moins de 20 minutes avant)
               ou d'absence non signalée, <strong>1€ sera prélevé automatiquement</strong> sur la carte enregistrée.
             </li>
             <li>

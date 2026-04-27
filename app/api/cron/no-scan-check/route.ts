@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 
   for (const r of toCharge) {
     try {
-      // Marque immédiatement NO_SHOW pour éviter un double-prélèvement si le cron repasse
+      // Marque immédiatement en absence non justifiée pour éviter un double-prélèvement si le cron repasse
       await prisma.reservation.update({
         where: { id: r.id },
         data: { statut: ReservationStatut.NO_SHOW },

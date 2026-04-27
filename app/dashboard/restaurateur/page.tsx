@@ -12,7 +12,7 @@ const STATUT_LABEL: Record<ReservationStatut, { label: string; color: string }> 
   CONFIRMEE:  { label: 'Confirmée',  color: 'bg-blue-50 text-blue-700' },
   VALIDEE:    { label: 'Validée ✓',  color: 'bg-green-50 text-green-700' },
   ANNULEE:    { label: 'Annulée',    color: 'bg-gray-100 text-gray-500' },
-  NO_SHOW:    { label: 'No-show',    color: 'bg-red-50 text-red-600' },
+  NO_SHOW:    { label: 'Absence non justifiée', color: 'bg-red-50 text-red-600' },
   TERMINEE:   { label: 'Terminée',   color: 'bg-gray-50 text-gray-500' },
 }
 

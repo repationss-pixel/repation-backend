@@ -9,7 +9,7 @@ const STATUT_STYLE: Record<ReservationStatut, { bg: string; text: string; label:
   ANNULEE:    { bg: 'bg-orange-50',   text: 'text-orange-700', label: 'Annulée' },
   TERMINEE:   { bg: 'bg-gray-100',    text: 'text-gray-500',   label: 'Terminée' },
   VALIDEE:    { bg: 'bg-green-50',    text: 'text-green-700',  label: 'Validée' },
-  NO_SHOW:    { bg: 'bg-red-50',      text: 'text-red-700',    label: 'No-show' },
+  NO_SHOW:    { bg: 'bg-red-50',      text: 'text-red-700',    label: 'Absence non justifiée' },
 }
 
 export default async function AdminReservationsPage() {
