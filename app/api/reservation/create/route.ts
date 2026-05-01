@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
   })
 
   // Emails — fire-and-forget (l'échec n'interrompt pas la réponse)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.repation.fr'
 
   fetch(`${appUrl}/api/email/confirmation`, {
     method: 'POST',
