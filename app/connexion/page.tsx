@@ -32,7 +32,7 @@ export default function ConnexionPage() {
       if (data.user.type === "RESTAURATEUR") {
         window.location.href = "/dashboard/restaurateur";
       } else {
-        window.location.href = "/";
+        window.location.href = "/mon-compte";
       }
     } catch {
       setError("Impossible de contacter le serveur.");

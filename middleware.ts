@@ -19,6 +19,29 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // ── Compte convive ────────────────────────────────────────────────────────
+  if (pathname.startsWith('/mon-compte')) {
+    const raw = req.cookies.get(SESSION_COOKIE)?.value
+    if (!raw) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/connexion'
+      return NextResponse.redirect(url)
+    }
+    try {
+      const session = JSON.parse(raw) as { type?: string }
+      if (session.type !== 'PARTICULIER') {
+        const url = req.nextUrl.clone()
+        url.pathname = '/connexion'
+        return NextResponse.redirect(url)
+      }
+    } catch {
+      const url = req.nextUrl.clone()
+      url.pathname = '/connexion'
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next()
+  }
+
   // ── Restaurateur dashboard ────────────────────────────────────────────────
   if (pathname.startsWith('/dashboard/restaurateur')) {
     const raw = req.cookies.get(SESSION_COOKIE)?.value
@@ -46,5 +69,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/dashboard/restaurateur/:path*'],
+  matcher: ['/admin/:path*', '/dashboard/restaurateur/:path*', '/mon-compte/:path*', '/mon-compte'],
 }

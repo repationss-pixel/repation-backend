@@ -1,5 +1,6 @@
 import SearchPanel from "@/components/SearchPanel";
 import InscriptionForm from "@/components/InscriptionForm";
+import { cookies } from "next/headers";
 
 const steps = [
   {
@@ -147,6 +148,20 @@ function MapMock() {
 }
 
 export default function Home() {
+  let sessionPrenom: string | null = null;
+  let sessionType: string | null = null;
+  try {
+    const raw = cookies().get("repation_session")?.value;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      sessionPrenom = parsed.prenom ?? null;
+      sessionType = parsed.type ?? null;
+    }
+  } catch {}
+
+  const accountHref = sessionType === "RESTAURATEUR" ? "/dashboard/restaurateur" : "/mon-compte";
+  const accountLabel = sessionPrenom ? `${sessionPrenom}` : null;
+
   return (
     <div className="min-h-screen bg-white">
 
@@ -157,17 +172,19 @@ export default function Home() {
             <img src="/logo-repation.png" alt="Repation" style={{ height: '44px', width: 'auto', display: 'block' }} />
           </div>
           <nav className="flex items-center gap-3">
+            {!accountLabel && (
+              <a
+                href="#inscription"
+                className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+              >
+                S&apos;inscrire
+              </a>
+            )}
             <a
-              href="#inscription"
-              className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
-            >
-              S&apos;inscrire
-            </a>
-            <a
-              href="/connexion"
+              href={accountLabel ? accountHref : "/connexion"}
               className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
             >
-              Se connecter
+              {accountLabel ? `Mon compte` : "Se connecter"}
             </a>
           </nav>
         </div>
