@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { UserType, RestaurantCategorie } from "@prisma/client";
-import { sendWelcomeRestaurantEmail } from "@/lib/email";
+import { sendWelcomeRestaurantEmail, sendWelcomeConviveEmail } from "@/lib/email";
 
 interface InscriptionBody {
   prenom: string;
@@ -96,6 +96,15 @@ export async function POST(req: NextRequest) {
     });
 
     let restaurantId: string | undefined;
+
+    if (userType === UserType.PARTICULIER) {
+      try {
+        await sendWelcomeConviveEmail(user.email, user.prenom)
+        console.log('[inscription] welcome convive envoyé à', user.email)
+      } catch (err) {
+        console.error('[inscription] welcome convive ERREUR:', JSON.stringify(err))
+      }
+    }
 
     if (userType === UserType.RESTAURATEUR) {
       const categorieEnum =

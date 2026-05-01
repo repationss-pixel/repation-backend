@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ReservationStatut } from '@prisma/client'
 import Stripe from 'stripe'
-import { sendRestaurantNotificationEmail } from '@/lib/email'
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { sendConfirmationEmail, sendRestaurantNotificationEmail } from '@/lib/email'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
 
@@ -105,15 +102,15 @@ export async function POST(req: NextRequest) {
     include: { restaurant: { select: { nom: true, slug: true } } },
   })
 
-  // TEST DIRECT RESEND — temporaire pour diagnostic
+  // Email de confirmation convive
   try {
-    const result = await resend.emails.send({
-      from: 'Repation <contact@repation.fr>',
-      to: user.email,
-      subject: 'Test réservation',
-      html: '<p>Test email réservation</p>',
-    })
-    console.log('RESEND RESULT:', JSON.stringify(result))
+    await sendConfirmationEmail(
+      user.email,
+      user.prenom,
+      reservation.restaurant.nom,
+      creneauDate.toISOString()
+    )
+    console.log('[email/confirmation] envoyé à', user.email)
   } catch (err) {
     console.error('[email/confirmation] ERREUR COMPLETE:', JSON.stringify(err))
   }

@@ -265,6 +265,112 @@ export async function sendWelcomeRestaurantEmail(
   })
 }
 
+// ─── Email de bienvenue convive ───────────────────────────────────────────────
+
+export async function sendWelcomeConviveEmail(to: string, prenom: string) {
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#F8F9FA;font-family:system-ui,-apple-system,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F8F9FA;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+        <!-- Logo -->
+        <tr>
+          <td align="center" style="padding-bottom:32px;">
+            <span style="font-size:26px;font-weight:800;color:#1D9E75;letter-spacing:-0.5px;">Repation</span>
+            <p style="margin:4px 0 0;font-size:13px;color:#6b7280;">Le hasard vous met à table.</p>
+          </td>
+        </tr>
+
+        <!-- Card -->
+        <tr>
+          <td style="background:#ffffff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.07);overflow:hidden;">
+
+            <!-- Bandeau -->
+            <div style="background:#1D9E75;padding:28px 32px;text-align:center;">
+              <p style="margin:0;font-size:32px;">🎉</p>
+              <p style="margin:12px 0 0;font-size:22px;font-weight:700;color:#ffffff;">
+                Bienvenue, ${prenom} !
+              </p>
+            </div>
+
+            <!-- Contenu -->
+            <div style="padding:32px;">
+              <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6;">
+                Vous venez de rejoindre Repation, la plateforme qui transforme un repas solitaire
+                en moment de convivialité.
+              </p>
+
+              <!-- Comment ça marche -->
+              <div style="margin-bottom:24px;">
+                <div style="display:flex;margin-bottom:16px;">
+                  <div style="background:#f0fdf4;border-radius:12px;padding:16px;margin-bottom:12px;width:100%;box-sizing:border-box;">
+                    <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#1D9E75;">
+                      1. Je réserve
+                    </p>
+                    <p style="margin:0;font-size:13px;color:#374151;line-height:1.5;">
+                      Choisissez un restaurant partenaire et un créneau disponible près de chez vous.
+                    </p>
+                  </div>
+                </div>
+                <div style="background:#f0fdf4;border-radius:12px;padding:16px;margin-bottom:12px;">
+                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#1D9E75;">
+                    2. Je rencontre
+                  </p>
+                  <p style="margin:0;font-size:13px;color:#374151;line-height:1.5;">
+                    Repation vous met en relation avec un autre convive au même créneau.
+                  </p>
+                </div>
+                <div style="background:#f0fdf4;border-radius:12px;padding:16px;">
+                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#1D9E75;">
+                    3. Je partage
+                  </p>
+                  <p style="margin:0;font-size:13px;color:#374151;line-height:1.5;">
+                    Vous vous retrouvez à table et partagez un bon repas. Simple, gratuit, convivial.
+                  </p>
+                </div>
+              </div>
+
+              <!-- CTA -->
+              <div style="text-align:center;margin-top:28px;">
+                <a
+                  href="https://www.repation.fr/recherche"
+                  style="display:inline-block;background:#1D9E75;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 36px;border-radius:10px;"
+                >
+                  Trouver une table →
+                </a>
+              </div>
+
+              <p style="margin:28px 0 0;font-size:14px;color:#6b7280;line-height:1.6;">
+                À très bientôt à table,<br />
+                <strong style="color:#1D9E75;">L'équipe Repation 🍽️</strong>
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#9ca3af;">
+                © ${new Date().getFullYear()} Repation · Vous recevez cet email car vous venez de créer un compte.
+              </p>
+            </div>
+
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  return send(to, '🎉 Bienvenue sur Repation !', html)
+}
+
 // ─── Rappel scan QR (T+20 min) ────────────────────────────────────────────────
 
 export async function sendScanReminderEmail(
