@@ -2,10 +2,15 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { ReservationStatut } from '@prisma/client'
+import { Prisma, ReservationStatut } from '@prisma/client'
 import { calculateInvoice } from '@/lib/billing'
+import LogoutButton from './LogoutButton'
 
 export const dynamic = 'force-dynamic'
+
+type ReservationAvecUser = Prisma.ReservationGetPayload<{
+  include: { user: { select: { prenom: true } } }
+}>
 
 const STATUT_LABEL: Record<ReservationStatut, { label: string; color: string }> = {
   EN_ATTENTE: { label: 'En attente', color: 'bg-yellow-50 text-yellow-700' },
@@ -22,6 +27,17 @@ function fmtSlot(date: Date) {
   }) + ' · ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
+function ErrorState({ message }: { message: string }) {
+  return (
+    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4">
+      <div className="text-center">
+        <p className="text-gray-600 mb-4">{message}</p>
+        <Link href="/" className="text-[#1D9E75] hover:underline text-sm">← Retour à l'accueil</Link>
+      </div>
+    </div>
+  )
+}
+
 export default async function RestaurateurDashboard() {
   const session = cookies().get('repation_session')?.value
   if (!session) redirect('/connexion')
@@ -35,28 +51,25 @@ export default async function RestaurateurDashboard() {
     redirect('/connexion')
   }
 
-  const restaurant = await prisma.restaurant.findFirst({
-    where: { restaurateurId: userId },
-  })
+  let restaurant: Awaited<ReturnType<typeof prisma.restaurant.findFirst>>
+  try {
+    restaurant = await prisma.restaurant.findFirst({
+      where: { restaurateurId: userId },
+    })
+  } catch {
+    return <ErrorState message="Impossible de charger votre restaurant. Veuillez réessayer." />
+  }
 
   if (!restaurant) {
-    return (
-      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Aucun restaurant lié à votre compte.</p>
-          <Link href="/" className="text-[#1D9E75] hover:underline text-sm">← Retour à l'accueil</Link>
-        </div>
-      </div>
-    )
+    return <ErrorState message="Aucun restaurant lié à votre compte." />
   }
 
   const now = new Date()
 
-  // Bornes temporelles
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const endOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  const startOfDay  = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const endOfDay    = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
 
-  const dow = now.getDay()
+  const dow         = now.getDay()
   const daysFromMon = dow === 0 ? 6 : dow - 1
   const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysFromMon)
   const endOfWeek   = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
@@ -66,48 +79,56 @@ export default async function RestaurateurDashboard() {
 
   const activeStatuts = [ReservationStatut.EN_ATTENTE, ReservationStatut.CONFIRMEE, ReservationStatut.VALIDEE]
 
-  // Stats
-  const [todayCount, weekCount, certifiedVisitIds, upcoming, past] = await Promise.all([
-    prisma.reservation.count({
-      where: { restaurantId: restaurant.id, creneau: { gte: startOfDay, lt: endOfDay }, statut: { in: activeStatuts } },
-    }),
-    prisma.reservation.count({
-      where: { restaurantId: restaurant.id, creneau: { gte: startOfWeek, lt: endOfWeek }, statut: { in: activeStatuts } },
-    }),
-    prisma.reservation.findMany({
-      where: {
-        restaurantId: restaurant.id,
-        statut: ReservationStatut.VALIDEE,
-        visitId: { not: null },
-        creneau: { gte: startOfMonth, lt: endOfMonth },
-      },
-      select: { visitId: true },
-      distinct: ['visitId'],
-    }),
-    prisma.reservation.findMany({
-      where: {
-        restaurantId: restaurant.id,
-        creneau: { gte: now },
-        statut: { in: [ReservationStatut.EN_ATTENTE, ReservationStatut.CONFIRMEE] },
-      },
-      include: { user: { select: { prenom: true } } },
-      orderBy: { creneau: 'asc' },
-      take: 30,
-    }),
-    prisma.reservation.findMany({
-      where: { restaurantId: restaurant.id, creneau: { lt: now } },
-      include: { user: { select: { prenom: true } } },
-      orderBy: { creneau: 'desc' },
-      take: 30,
-    }),
-  ])
+  let todayCount = 0
+  let weekCount = 0
+  let certifiedVisitIds: { visitId: string | null }[] = []
+  let upcoming: ReservationAvecUser[] = []
+  let past: ReservationAvecUser[] = []
+
+  try {
+    ;[todayCount, weekCount, certifiedVisitIds, upcoming, past] = await Promise.all([
+      prisma.reservation.count({
+        where: { restaurantId: restaurant.id, creneau: { gte: startOfDay, lt: endOfDay }, statut: { in: activeStatuts } },
+      }),
+      prisma.reservation.count({
+        where: { restaurantId: restaurant.id, creneau: { gte: startOfWeek, lt: endOfWeek }, statut: { in: activeStatuts } },
+      }),
+      prisma.reservation.findMany({
+        where: {
+          restaurantId: restaurant.id,
+          statut: ReservationStatut.VALIDEE,
+          visitId: { not: null },
+          creneau: { gte: startOfMonth, lt: endOfMonth },
+        },
+        select: { visitId: true },
+        distinct: ['visitId'],
+      }),
+      prisma.reservation.findMany({
+        where: {
+          restaurantId: restaurant.id,
+          creneau: { gte: now },
+          statut: { in: [ReservationStatut.EN_ATTENTE, ReservationStatut.CONFIRMEE] },
+        },
+        include: { user: { select: { prenom: true } } },
+        orderBy: { creneau: 'asc' },
+        take: 30,
+      }),
+      prisma.reservation.findMany({
+        where: { restaurantId: restaurant.id, creneau: { lt: now } },
+        include: { user: { select: { prenom: true } } },
+        orderBy: { creneau: 'desc' },
+        take: 30,
+      }),
+    ])
+  } catch {
+    return <ErrorState message="Impossible de charger les données. Veuillez réessayer dans quelques instants." />
+  }
 
   const certifiedCount = certifiedVisitIds.length
   const totalClients   = certifiedCount * 2
   const { montantHT, montantTTC, tarifParClient } = calculateInvoice(restaurant.categorie, certifiedCount)
   const billable = certifiedCount >= 5
 
-  // Grouper les réservations à venir par créneau pour associer les convives
   const slotMap = new Map<string, typeof upcoming>()
   for (const r of upcoming) {
     const key = r.creneau.toISOString()
@@ -127,19 +148,7 @@ export default async function RestaurateurDashboard() {
             <span className="text-gray-300">|</span>
             <span className="text-sm font-semibold text-gray-700">Tableau de bord</span>
           </div>
-          <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              onClick={async (e) => {
-                e.preventDefault()
-                await fetch('/api/auth/logout', { method: 'POST' })
-                window.location.href = '/'
-              }}
-              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              Déconnexion
-            </button>
-          </form>
+          <LogoutButton />
         </div>
       </header>
 
