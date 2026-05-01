@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { data, error } = await resend.emails.send({
-    from: 'Repation <onboarding@resend.dev>',
+    from: 'Repation <contact@repation.fr>',
     to,
     subject: '🍽️ Nouvelle réservation Repation !',
     html: buildHtml(restaurantNom, creneau),
