@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import QRCode from 'qrcode'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = 'Repation <contact@repation.fr>'
@@ -46,7 +47,225 @@ function send(to: string, subject: string, html: string) {
   return resend.emails.send({ from: FROM, to, subject, html })
 }
 
-// ─── Templates ────────────────────────────────────────────────────────────────
+// ─── Confirmation de réservation (convive) ────────────────────────────────────
+
+export async function sendConfirmationEmail(
+  to: string, prenom: string, restaurantNom: string, creneau: string
+) {
+  const html = layout(
+    '✅ Réservation confirmée !', '#1D9E75',
+    `<p style="margin:0 0 20px;font-size:16px;color:#1a1a1a;">Bonjour <strong>${prenom}</strong>,</p>
+     <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
+       Votre réservation au
+       <strong style="color:#1D9E75;">${restaurantNom}</strong>
+       est confirmée pour le <strong>${fmtDate(creneau)}</strong>
+       à <strong>${fmtHeure(creneau)}</strong>.
+     </p>
+     <div style="background:#f0fdf4;border-left:4px solid #1D9E75;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:24px;">
+       <p style="margin:0;font-size:14px;color:#166534;">
+         🤝 Votre convive vous rejoindra à la même table.
+       </p>
+     </div>
+     <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 16px;margin-bottom:28px;">
+       <p style="margin:0;font-size:13px;color:#854d0e;line-height:1.5;">
+         ⚠️ <strong>Annulation gratuite</strong> jusqu'à 20 minutes avant votre réservation.
+         Au-delà, <strong>1€ sera prélevé automatiquement</strong>.
+       </p>
+     </div>
+     <p style="margin:0;font-size:14px;color:#6b7280;">À tout à l'heure,<br/>
+       <strong style="color:#1D9E75;">L'équipe Repation 🍽️</strong>
+     </p>`
+  )
+  return send(to, '✅ Votre réservation Repation est confirmée !', html)
+}
+
+// ─── Notification nouvelle réservation (restaurateur) ─────────────────────────
+
+export async function sendRestaurantNotificationEmail(
+  to: string, restaurantNom: string, creneau: string
+) {
+  const html = layout(
+    '🍽️ Nouvelle réservation !', '#1D9E75',
+    `<p style="margin:0 0 20px;font-size:16px;color:#1a1a1a;">Bonjour,</p>
+     <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
+       Une nouvelle table Repation a été réservée dans votre établissement
+       <strong style="color:#1D9E75;">${restaurantNom}</strong>.
+     </p>
+     <div style="background:#f0fdf4;border-left:4px solid #1D9E75;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:24px;">
+       <p style="margin:0 0 4px;font-size:13px;color:#166534;font-weight:600;">Date et heure</p>
+       <p style="margin:0;font-size:15px;color:#166534;font-weight:700;">
+         ${fmtDate(creneau)} à ${fmtHeure(creneau)}
+       </p>
+     </div>
+     <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
+       <p style="margin:0;font-size:14px;color:#374151;">
+         👥 <strong>Deux convives</strong> seront présents à cette table.
+       </p>
+     </div>
+     <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 16px;margin-bottom:28px;">
+       <p style="margin:0;font-size:13px;color:#854d0e;">
+         ✅ <strong>Aucune action requise de votre part.</strong>
+         Repation gère la mise en relation entre les convives.
+       </p>
+     </div>
+     <p style="margin:0;font-size:14px;color:#6b7280;">À bientôt,<br/>
+       <strong style="color:#1D9E75;">L'équipe Repation 🍽️</strong>
+     </p>`
+  )
+  return send(to, '🍽️ Nouvelle réservation Repation !', html)
+}
+
+// ─── Email de bienvenue restaurateur avec QR codes ────────────────────────────
+
+export async function sendWelcomeRestaurantEmail(
+  to: string, nomEtablissement: string, slug: string
+) {
+  const qrOptions: QRCode.QRCodeToDataURLOptions = {
+    width: 260,
+    margin: 2,
+    errorCorrectionLevel: 'M',
+  }
+
+  const [qrCheckin, qrRepation] = await Promise.all([
+    QRCode.toDataURL(`https://www.repation.fr/check-in/${slug}`, {
+      ...qrOptions,
+      color: { dark: '#1D9E75', light: '#FFFFFF' },
+    }),
+    QRCode.toDataURL('https://www.repation.fr', {
+      ...qrOptions,
+      color: { dark: '#1a1a1a', light: '#FFFFFF' },
+    }),
+  ])
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#F8F9FA;font-family:system-ui,-apple-system,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F8F9FA;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#1D9E75;padding:32px 40px;text-align:center;">
+            <p style="margin:0;font-size:32px;">🎉</p>
+            <h1 style="margin:12px 0 4px;color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.3px;">
+              Bienvenue sur Repation !
+            </h1>
+            <p style="margin:0;color:rgba(255,255,255,0.85);font-size:14px;">
+              ${nomEtablissement} est maintenant partenaire
+            </p>
+          </td>
+        </tr>
+
+        <!-- Intro -->
+        <tr>
+          <td style="padding:32px 40px 24px;">
+            <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.6;">
+              Tout est prêt ! Voici vos <strong>2 QR codes</strong> à imprimer et disposer sur vos tables.
+              Chaque table accueillant 2 convives Repation doit avoir <strong>un QR code par convive</strong>.
+            </p>
+            <p style="margin:0;color:#6B7280;font-size:14px;line-height:1.6;">
+              Repation ne vous facture rien tant que vous n'atteignez pas 5 visites certifiées dans le mois.
+              Au-delà, un prélèvement automatique est effectué le 1er du mois suivant.
+            </p>
+          </td>
+        </tr>
+
+        <!-- QR 1 — Validation -->
+        <tr>
+          <td style="padding:0 40px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF9;border:1px solid #A7F3D0;border-radius:12px;overflow:hidden;">
+              <tr>
+                <td style="padding:24px 28px;">
+                  <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#1D9E75;">
+                    QR Code n°1 — Validation de présence
+                  </p>
+                  <h2 style="margin:0 0 8px;font-size:18px;font-weight:800;color:#111827;">Scan de confirmation</h2>
+                  <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.5;">
+                    Les convives scannent ce QR code dès leur arrivée pour <strong>confirmer leur présence</strong>
+                    et activer votre compteur mensuel. Sans scan dans les 30 minutes, la réservation passe en absence non justifiée.
+                  </p>
+                  <div style="text-align:center;">
+                    <img src="${qrCheckin}" alt="QR code de validation" width="200" height="200"
+                      style="display:block;margin:0 auto;border-radius:8px;" />
+                    <p style="margin:12px 0 0;font-size:11px;color:#6B7280;font-family:monospace;">
+                      repation.fr/check-in/${slug}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- QR 2 — Promotion -->
+        <tr>
+          <td style="padding:0 40px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
+              <tr>
+                <td style="padding:24px 28px;">
+                  <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#6B7280;">
+                    QR Code n°2 — Découvrir Repation
+                  </p>
+                  <h2 style="margin:0 0 8px;font-size:18px;font-weight:800;color:#111827;">Invitation pour vos clients</h2>
+                  <p style="margin:0 0 20px;font-size:14px;color:#374151;line-height:1.5;">
+                    Affichez ce QR code en salle ou en vitrine pour inviter vos clients habituels
+                    à découvrir Repation et réserver une table chez vous.
+                  </p>
+                  <div style="text-align:center;">
+                    <img src="${qrRepation}" alt="QR code Repation" width="200" height="200"
+                      style="display:block;margin:0 auto;border-radius:8px;" />
+                    <p style="margin:12px 0 0;font-size:11px;color:#6B7280;font-family:monospace;">
+                      repation.fr
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- CTA -->
+        <tr>
+          <td style="padding:0 40px 32px;text-align:center;">
+            <a href="https://www.repation.fr/dashboard/restaurateur"
+              style="display:inline-block;background:#1D9E75;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:10px;">
+              Accéder à mon tableau de bord →
+            </a>
+            <p style="margin:16px 0 0;font-size:13px;color:#9CA3AF;">
+              Des questions ? Contactez-nous via le formulaire sur repation.fr
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#F9FAFB;border-top:1px solid #F3F4F6;padding:20px 40px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9CA3AF;">
+              © ${new Date().getFullYear()} Repation · Vous recevez cet email car vous venez de créer un compte restaurateur.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: '🎉 Bienvenue sur Repation — Vos 2 QR codes sont prêts !',
+    html,
+  })
+}
+
+// ─── Rappel scan QR (T+20 min) ────────────────────────────────────────────────
 
 export async function sendScanReminderEmail(
   to: string, prenom: string, restaurantNom: string, creneau: string
@@ -70,6 +289,8 @@ export async function sendScanReminderEmail(
   return send(to, '⏰ Rappel : confirmez votre présence Repation', html)
 }
 
+// ─── Prélèvement absence non justifiée (T+30 min) ────────────────────────────
+
 export async function sendNoScanChargeEmail(
   to: string, prenom: string, restaurantNom: string, creneau: string
 ) {
@@ -91,6 +312,8 @@ export async function sendNoScanChargeEmail(
   )
   return send(to, '📋 Présence non confirmée — 1€ prélevé', html)
 }
+
+// ─── Annulation en cascade — convive partenaire ───────────────────────────────
 
 export async function sendCascadeCancelConviveEmail(
   to: string, prenom: string, restaurantNom: string, creneau: string
@@ -116,6 +339,8 @@ export async function sendCascadeCancelConviveEmail(
   )
   return send(to, '😔 Votre table Repation a été annulée', html)
 }
+
+// ─── Annulation en cascade — restaurant ──────────────────────────────────────
 
 export async function sendCascadeCancelRestaurantEmail(
   to: string, restaurantNom: string, creneau: string

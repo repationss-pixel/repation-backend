@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ReservationStatut } from '@prisma/client'
 import Stripe from 'stripe'
+import { sendConfirmationEmail, sendRestaurantNotificationEmail } from '@/lib/email'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
 
@@ -101,36 +102,37 @@ export async function POST(req: NextRequest) {
     include: { restaurant: { select: { nom: true, slug: true } } },
   })
 
-  // Emails — fire-and-forget (l'échec n'interrompt pas la réponse)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.repation.fr'
-
-  fetch(`${appUrl}/api/email/confirmation`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: user.email,
-      prenom: user.prenom,
-      restaurantNom: reservation.restaurant.nom,
-      creneau: creneauDate.toISOString(),
-    }),
-  }).catch((err) => console.error('[email/confirmation] envoi échoué :', err))
+  // Email de confirmation convive
+  try {
+    await sendConfirmationEmail(
+      user.email,
+      user.prenom,
+      reservation.restaurant.nom,
+      creneauDate.toISOString()
+    )
+    console.log('[email/confirmation] envoyé à', user.email)
+  } catch (err) {
+    console.error('[email/confirmation] ERREUR COMPLETE:', JSON.stringify(err))
+  }
 
   // Notification au restaurateur si le lien existe
   if (restaurant.restaurateurId) {
-    prisma.user.findUnique({ where: { id: restaurant.restaurateurId }, select: { email: true } })
-      .then((restaurateur) => {
-        if (!restaurateur) return
-        fetch(`${appUrl}/api/email/restaurant-notification`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: restaurateur.email,
-            restaurantNom: reservation.restaurant.nom,
-            creneau: creneauDate.toISOString(),
-          }),
-        }).catch((err) => console.error('[email/restaurant-notification] envoi échoué :', err))
+    try {
+      const restaurateur = await prisma.user.findUnique({
+        where: { id: restaurant.restaurateurId },
+        select: { email: true },
       })
-      .catch((err) => console.error('[email/restaurant-notification] lookup échoué :', err))
+      if (restaurateur) {
+        await sendRestaurantNotificationEmail(
+          restaurateur.email,
+          reservation.restaurant.nom,
+          creneauDate.toISOString()
+        )
+        console.log('[email/restaurant-notification] envoyé à', restaurateur.email)
+      }
+    } catch (err) {
+      console.error('[email/restaurant-notification] ERREUR COMPLETE:', JSON.stringify(err))
+    }
   }
 
   return NextResponse.json({ reservation }, { status: 201 })
