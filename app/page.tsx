@@ -2,6 +2,8 @@ import SearchPanel from "@/components/SearchPanel";
 import InscriptionForm from "@/components/InscriptionForm";
 import { cookies } from "next/headers";
 
+export const dynamic = 'force-dynamic'
+
 const steps = [
   {
     title: "1. Je réserve",
