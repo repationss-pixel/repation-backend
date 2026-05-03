@@ -72,6 +72,7 @@ export default async function AdminReservationsPage() {
                         year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit',
+                        timeZone: 'Europe/Paris',
                       })}
                     </td>
                     <td className="px-4 py-4 font-medium text-gray-900">{r.restaurant.nom}</td>

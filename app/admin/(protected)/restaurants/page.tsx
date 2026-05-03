@@ -73,7 +73,7 @@ export default async function AdminRestaurantsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-gray-500">
-                      {r.createdAt.toLocaleDateString('fr-FR')}
+                      {r.createdAt.toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' })}
                     </td>
                     <td className="px-4 py-4 text-right font-medium text-gray-800">
                       {clientsMois > 0 ? clientsMois : <span className="text-gray-300">—</span>}

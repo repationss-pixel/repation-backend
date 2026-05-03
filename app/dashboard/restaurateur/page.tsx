@@ -23,8 +23,8 @@ const STATUT_LABEL: Record<ReservationStatut, { label: string; color: string }> 
 
 function fmtSlot(date: Date) {
   return date.toLocaleDateString('fr-FR', {
-    weekday: 'short', day: 'numeric', month: 'short',
-  }) + ' · ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Paris',
+  }) + ' · ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
 }
 
 function ErrorState({ message }: { message: string }) {
@@ -189,7 +189,7 @@ export default async function RestaurateurDashboard() {
         {billable && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Facture estimée — {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              Facture estimée — {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })}
             </h2>
             <div className="space-y-2 text-sm">
               {[

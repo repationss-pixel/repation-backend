@@ -194,7 +194,7 @@ export default async function MonComptePage() {
                         {!isLate && (
                           <p className="text-xs text-gray-400 mt-1">
                             Annulation gratuite avant{" "}
-                            {deadline.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                            {deadline.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}
                           </p>
                         )}
                         {isLate && (

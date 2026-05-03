@@ -65,7 +65,7 @@ export default async function RestaurantDashboard({ params }: { params: { slug: 
       adresse: restaurant.adresse,
       categorie: restaurant.categorie,
     },
-    mois: now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
+    mois: now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }),
     visitesCertifiees: certifiedCount,
     tarifParClient,
     montantHT,
@@ -97,7 +97,7 @@ export default async function RestaurantDashboard({ params }: { params: { slug: 
             <div className="text-4xl font-bold text-[#1D9E75]">{certifiedCount}</div>
             <div className="text-gray-700 font-medium mt-1">Clients certifiés</div>
             <div className="text-xs text-gray-400 mt-1">
-              {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })}
             </div>
           </div>
 
@@ -156,7 +156,7 @@ export default async function RestaurantDashboard({ params }: { params: { slug: 
         {billable ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Facture — {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              Facture — {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })}
             </h2>
             <div className="space-y-3 mb-6">
               {[

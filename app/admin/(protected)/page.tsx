@@ -17,7 +17,7 @@ export default async function AdminDashboard() {
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+  const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })
 
   const [totalRestaurants, totalParticuliers, totalReservationsMois, revenueAgg] =
     await Promise.all([

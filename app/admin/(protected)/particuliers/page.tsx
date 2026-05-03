@@ -51,7 +51,7 @@ export default async function AdminParticuliersPage() {
                     <td className="px-4 py-4 text-gray-600">{u.email}</td>
                     <td className="px-4 py-4 text-gray-600 font-mono text-xs">{u.phone}</td>
                     <td className="px-4 py-4 text-gray-500">
-                      {u.createdAt.toLocaleDateString('fr-FR')}
+                      {u.createdAt.toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' })}
                     </td>
                     <td className="px-4 py-4 text-right font-medium text-gray-800">
                       {u._count.reservations}
