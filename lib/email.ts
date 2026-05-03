@@ -241,7 +241,7 @@ export async function sendWelcomeRestaurantEmail(
               Accéder à mon tableau de bord →
             </a>
             <p style="margin:16px 0 0;font-size:13px;color:#9CA3AF;">
-              Des questions ? Contactez-nous via le formulaire sur repation.fr
+              Des questions ? <a href="https://www.repation.fr/contact" style="color:#1D9E75;text-decoration:underline;">Contactez-nous</a>
             </p>
           </td>
         </tr>

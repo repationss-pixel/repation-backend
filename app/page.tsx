@@ -267,15 +267,33 @@ export default function Home() {
       {/* ── Inscription ── */}
       <section id="inscription" className="py-24 px-6 bg-white">
         <div className="max-w-lg mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
-              Rejoindre Repation
-            </h2>
-            <p className="text-lg text-gray-500">
-              Gratuit pour tous. Restaurateurs et convives.
-            </p>
-          </div>
-          <InscriptionForm />
+          {accountLabel ? (
+            <div className="text-center space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                Bon retour,{" "}
+                <span className="text-[#1D9E75]">{accountLabel}</span>&nbsp;!
+              </h2>
+              <p className="text-lg text-gray-500">Retrouvez vos réservations et votre profil.</p>
+              <a
+                href={accountHref}
+                className="inline-block bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base shadow-sm"
+              >
+                Accéder à mon compte →
+              </a>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-10">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+                  Rejoindre Repation
+                </h2>
+                <p className="text-lg text-gray-500">
+                  Gratuit pour tous. Restaurateurs et convives.
+                </p>
+              </div>
+              <InscriptionForm />
+            </>
+          )}
         </div>
       </section>
 
@@ -292,6 +310,7 @@ export default function Home() {
             <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} Repation. Tous droits réservés.
             </p>
+            <a href="/contact" className="text-sm text-gray-400 hover:text-gray-600 underline">Contact</a>
             <a href="/cgu" className="text-sm text-gray-400 hover:text-gray-600 underline">CGU</a>
             <a href="/confidentialite" className="text-sm text-gray-400 hover:text-gray-600 underline">Confidentialité</a>
           </div>
