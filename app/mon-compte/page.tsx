@@ -110,7 +110,6 @@ export default async function MonComptePage() {
           <form action="/api/auth/logout" method="POST">
             <button
               type="submit"
-              formAction="/api/auth/logout"
               className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
             >
               Déconnexion
