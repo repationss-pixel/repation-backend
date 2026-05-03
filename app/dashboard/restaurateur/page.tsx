@@ -136,17 +136,22 @@ export default async function RestaurateurDashboard() {
   }
   const upcomingSlots = Array.from(slotMap.values())
 
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: '12px',
+    padding: '20px',
+  }
+
   return (
     <div
-      className="min-h-screen"
       style={restaurant.photoUrl ? {
         backgroundImage: `url(${restaurant.photoUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-      } : { background: '#F8F9FA' }}
+        minHeight: '100vh',
+      } : { background: '#F8F9FA', minHeight: '100vh' }}
     >
-      <div style={restaurant.photoUrl ? { backgroundColor: 'rgba(255, 255, 255, 0.85)', minHeight: '100vh' } : undefined}>
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -163,7 +168,7 @@ export default async function RestaurateurDashboard() {
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         {/* Titre restaurant */}
-        <div>
+        <div style={cardStyle}>
           <span className="inline-block text-xs font-semibold text-[#1D9E75] bg-[#1D9E75]/10 px-2.5 py-1 rounded-full mb-2">
             {restaurant.categorie}
           </span>
@@ -184,7 +189,7 @@ export default async function RestaurateurDashboard() {
               highlight: billable,
             },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <div key={s.label} className="border border-gray-100 shadow-sm" style={cardStyle}>
               <div className={`text-3xl font-extrabold ${s.highlight ? 'text-orange-500' : 'text-[#1D9E75]'}`}>
                 {s.value}
               </div>
@@ -196,7 +201,7 @@ export default async function RestaurateurDashboard() {
 
         {/* Facture détaillée */}
         {billable && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="border border-gray-100 shadow-sm" style={cardStyle}>
             <h2 className="text-lg font-bold text-gray-900 mb-4">
               Facture estimée — {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'Europe/Paris' })}
             </h2>
@@ -220,7 +225,7 @@ export default async function RestaurateurDashboard() {
         )}
 
         {/* Réservations à venir */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="border border-gray-100 shadow-sm overflow-hidden" style={{ ...cardStyle, padding: 0 }}>
           <div className="px-6 py-5 border-b border-gray-50">
             <h2 className="text-lg font-bold text-gray-900">Réservations à venir</h2>
           </div>
@@ -249,7 +254,7 @@ export default async function RestaurateurDashboard() {
         </div>
 
         {/* Réservations passées */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="border border-gray-100 shadow-sm overflow-hidden" style={{ ...cardStyle, padding: 0 }}>
           <div className="px-6 py-5 border-b border-gray-50">
             <h2 className="text-lg font-bold text-gray-900">Historique</h2>
           </div>
@@ -274,13 +279,12 @@ export default async function RestaurateurDashboard() {
         </div>
 
         {/* Footer légal */}
-        <div className="flex items-center gap-4 text-xs text-gray-400 pt-2">
+        <div className="flex items-center gap-4 text-xs text-gray-400 pt-2" style={cardStyle}>
           <a href="/cgu-restaurateurs" className="hover:text-gray-600 underline">CGU Restaurateurs</a>
           <a href="/confidentialite" className="hover:text-gray-600 underline">Politique de confidentialité</a>
         </div>
 
       </main>
-      </div>
     </div>
   )
 }
