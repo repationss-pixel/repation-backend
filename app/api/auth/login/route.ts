@@ -1,41 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
 
 const COOKIE = 'repation_session'
 const MAX_AGE = 60 * 60 * 24 * 30 // 30 jours
 
 export async function POST(req: NextRequest) {
-  let body: { email?: string; phone?: string }
+  let body: { email?: string; phone?: string; password?: string; type?: string }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Corps JSON invalide' }, { status: 400 })
   }
 
-  const { email, phone } = body
-  if (!email || !phone) {
-    return NextResponse.json({ error: 'Email et téléphone requis' }, { status: 400 })
+  const { email, phone, password, type } = body
+  if (!email) return NextResponse.json({ error: 'Email requis' }, { status: 400 })
+
+  const isRestaurateur = type === 'restaurateur' || type === 'RESTAURATEUR'
+
+  let userId: string | null = null
+  let userPrenom: string | null = null
+  let userType: string | null = null
+
+  if (isRestaurateur) {
+    if (!phone) return NextResponse.json({ error: 'Téléphone requis' }, { status: 400 })
+    const user = await prisma.user.findFirst({
+      where: { email: email.trim().toLowerCase(), phone: phone.replace(/\s/g, '') },
+      select: { id: true, prenom: true, type: true },
+    })
+    if (user) { userId = user.id; userPrenom = user.prenom; userType = user.type }
+  } else {
+    if (!password) return NextResponse.json({ error: 'Mot de passe requis' }, { status: 400 })
+    const user = await prisma.user.findFirst({
+      where: { email: email.trim().toLowerCase() },
+      select: { id: true, prenom: true, type: true, passwordHash: true },
+    })
+    if (user && user.passwordHash && await bcrypt.compare(password, user.passwordHash)) {
+      userId = user.id; userPrenom = user.prenom; userType = user.type
+    }
   }
 
-  const normalizedPhone = phone.replace(/\s/g, '')
-  const user = await prisma.user.findFirst({
-    where: {
-      email: email.trim().toLowerCase(),
-      phone: normalizedPhone,
-    },
-    select: { id: true, prenom: true, type: true },
-  })
-
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Aucun compte trouvé avec ces identifiants.' },
-      { status: 401 }
-    )
+  if (!userId || !userPrenom || !userType) {
+    return NextResponse.json({ error: 'Identifiants incorrects.' }, { status: 401 })
   }
 
-  const sessionValue = JSON.stringify({ userId: user.id, type: user.type, prenom: user.prenom })
-
-  const res = NextResponse.json({ user: { id: user.id, prenom: user.prenom, type: user.type } })
+  const sessionValue = JSON.stringify({ userId, type: userType, prenom: userPrenom })
+  const res = NextResponse.json({ user: { id: userId, prenom: userPrenom, type: userType } })
   res.cookies.set(COOKIE, sessionValue, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

@@ -172,20 +172,29 @@ export default function Home() {
             <img src="/logo-repation.png" alt="Repation" style={{ height: '44px', width: 'auto', display: 'block' }} />
           </div>
           <nav className="flex items-center gap-3">
-            {!accountLabel && (
+            {accountLabel ? (
               <a
-                href="#inscription"
-                className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+                href={accountHref}
+                className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
               >
-                S&apos;inscrire
+                Mon compte
               </a>
+            ) : (
+              <>
+                <a
+                  href="/inscription"
+                  className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+                >
+                  Inscription
+                </a>
+                <a
+                  href="/connexion"
+                  className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
+                >
+                  Connexion
+                </a>
+              </>
             )}
-            <a
-              href={accountLabel ? accountHref : "/connexion"}
-              className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
-            >
-              {accountLabel ? `Mon compte` : "Se connecter"}
-            </a>
           </nav>
         </div>
       </header>
@@ -197,11 +206,6 @@ export default function Home() {
 
             {/* Left */}
             <div className="py-16 lg:py-0 lg:pr-8">
-              <div className="inline-flex items-center gap-2 bg-[#1D9E75]/10 text-[#1D9E75] text-sm font-medium px-3 py-1.5 rounded-full mb-8">
-                <span className="w-2 h-2 rounded-full bg-[#1D9E75]" />
-                Nouveau
-              </div>
-
               <h1 className="text-5xl sm:text-6xl font-extrabold leading-[1.08] mb-6 tracking-tight">
                 <span className="text-gray-900">Le hasard</span>
                 <br />

@@ -27,9 +27,10 @@ function fmtSlot(date: Date) {
       day: "numeric",
       month: "short",
       year: "numeric",
+      timeZone: "Europe/Paris",
     }) +
     " · " +
-    date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+    date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })
   );
 }
 
@@ -46,7 +47,7 @@ export default async function MonComptePage() {
     redirect("/connexion");
   }
 
-  let user: { id: string; prenom: string; email: string; phone: string } | null = null;
+  let user: { id: string; prenom: string; email: string; phone: string | null } | null = null;
   let upcoming: ReservationAvecRestaurant[] = [];
   let past: ReservationAvecRestaurant[] = [];
 
@@ -138,7 +139,7 @@ export default async function MonComptePage() {
             </div>
             <div className="bg-gray-50 rounded-xl px-4 py-3">
               <p className="text-xs text-gray-400 mb-0.5">Téléphone</p>
-              <p className="font-medium text-gray-800">{user.phone}</p>
+              <p className="font-medium text-gray-800">{user.phone ?? "—"}</p>
             </div>
           </div>
         </div>

@@ -16,7 +16,8 @@ interface ReservationInfo {
   annulationDeadline: string | null;
 }
 
-const CRENEAUX = ["12:00", "12:30", "13:00", "19:30", "20:00", "20:30"];
+const CRENEAUX_MIDI = ["11:30", "12:00", "12:30", "13:00", "13:30"];
+const CRENEAUX_SOIR = ["19:00", "19:30", "20:00", "20:30", "21:00"];
 
 type Step = "slots" | "phone" | "card" | "success" | "cancelled" | "error";
 
@@ -260,26 +261,45 @@ export default function BookingSection({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Créneaux disponibles</h2>
-        <div className="grid grid-cols-3 gap-3">
-          {CRENEAUX.map((c) => (
-            <button
-              key={c}
-              onClick={() => {
-                setSelectedCreneau(c);
-                setStep("phone");
-                setPhoneError("");
-              }}
-              className={`py-3 rounded-xl text-sm font-semibold border transition-all ${
-                selectedCreneau === c && step === "phone"
-                  ? "bg-[#1D9E75] text-white border-[#1D9E75]"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold text-gray-900">Créneaux disponibles</h2>
+
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Midi</p>
+          <div className="grid grid-cols-5 gap-2">
+            {CRENEAUX_MIDI.map((c) => (
+              <button
+                key={c}
+                onClick={() => { setSelectedCreneau(c); setStep("phone"); setPhoneError(""); }}
+                className={`py-3 rounded-xl text-sm font-semibold border transition-all ${
+                  selectedCreneau === c && step === "phone"
+                    ? "bg-[#1D9E75] text-white border-[#1D9E75]"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Soir</p>
+          <div className="grid grid-cols-5 gap-2">
+            {CRENEAUX_SOIR.map((c) => (
+              <button
+                key={c}
+                onClick={() => { setSelectedCreneau(c); setStep("phone"); setPhoneError(""); }}
+                className={`py-3 rounded-xl text-sm font-semibold border transition-all ${
+                  selectedCreneau === c && step === "phone"
+                    ? "bg-[#1D9E75] text-white border-[#1D9E75]"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-[#1D9E75] hover:text-[#1D9E75]"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

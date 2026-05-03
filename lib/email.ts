@@ -9,11 +9,15 @@ const FROM = 'Repation <contact@repation.fr>'
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'Europe/Paris',
   })
 }
 
 function fmtHeure(iso: string) {
-  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('fr-FR', {
+    hour: '2-digit', minute: '2-digit',
+    timeZone: 'Europe/Paris',
+  })
 }
 
 function layout(bandeau: string, bandeauColor: string, body: string): string {

@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { UserType, RestaurantCategorie } from "@prisma/client";
 import { sendWelcomeRestaurantEmail, sendWelcomeConviveEmail } from "@/lib/email";
+import bcrypt from "bcryptjs";
 
 interface InscriptionBody {
   prenom: string;
   email: string;
-  phone: string;
+  password?: string;
+  phone?: string;
   type: "particulier" | "restaurateur";
   categorie?: "RESTAURANT" | "FAST_FOOD" | "CAFE";
   adresse?: string;
@@ -54,22 +56,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { prenom, email, phone, type, categorie, adresse, latitude, longitude } = body;
+  const { prenom, email, password, phone, type, categorie, adresse, latitude, longitude } = body;
 
-  // ── Validation ──────────────────────────────────────────────────────────────
+  // ── Validation commune ──────────────────────────────────────────────────────
   if (!prenom?.trim()) {
     return NextResponse.json({ error: "Le prénom est requis." }, { status: 422 });
   }
-
   if (!email?.trim() || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "Adresse email invalide." }, { status: 422 });
   }
-
-  const normalizedPhone = normalizePhone(phone ?? "");
-  if (!PHONE_RE.test(normalizedPhone)) {
-    return NextResponse.json({ error: "Numéro de téléphone invalide." }, { status: 422 });
-  }
-
   if (!["particulier", "restaurateur"].includes(type)) {
     return NextResponse.json({ error: "Type de compte invalide." }, { status: 422 });
   }
@@ -77,32 +72,53 @@ export async function POST(req: NextRequest) {
   const userType: UserType =
     type === "restaurateur" ? UserType.RESTAURATEUR : UserType.PARTICULIER;
 
+  // ── Validation spécifique par type ──────────────────────────────────────────
+  if (userType === UserType.PARTICULIER) {
+    if (!password || password.length < 6) {
+      return NextResponse.json(
+        { error: "Le mot de passe doit contenir au moins 6 caractères." },
+        { status: 422 }
+      );
+    }
+  }
+
+  if (userType === UserType.RESTAURATEUR) {
+    const normalizedPhone = normalizePhone(phone ?? "");
+    if (!PHONE_RE.test(normalizedPhone)) {
+      return NextResponse.json({ error: "Numéro de téléphone invalide." }, { status: 422 });
+    }
+  }
+
   // ── Persistence ─────────────────────────────────────────────────────────────
   try {
+    const userData =
+      userType === UserType.PARTICULIER
+        ? {
+            prenom: prenom.trim(),
+            email: email.trim().toLowerCase(),
+            passwordHash: await bcrypt.hash(password!, 10),
+            type: userType,
+          }
+        : {
+            prenom: prenom.trim(),
+            email: email.trim().toLowerCase(),
+            phone: normalizePhone(phone!),
+            type: userType,
+          };
+
     const user = await prisma.user.create({
-      data: {
-        prenom: prenom.trim(),
-        email: email.trim().toLowerCase(),
-        phone: normalizedPhone,
-        type: userType,
-      },
-      select: {
-        id: true,
-        prenom: true,
-        email: true,
-        type: true,
-        createdAt: true,
-      },
+      data: userData,
+      select: { id: true, prenom: true, email: true, type: true, createdAt: true },
     });
 
     let restaurantId: string | undefined;
 
     if (userType === UserType.PARTICULIER) {
       try {
-        await sendWelcomeConviveEmail(user.email, user.prenom)
-        console.log('[inscription] welcome convive envoyé à', user.email)
+        await sendWelcomeConviveEmail(user.email, user.prenom);
+        console.log("[inscription] welcome convive envoyé à", user.email);
       } catch (err) {
-        console.error('[inscription] welcome convive ERREUR:', JSON.stringify(err))
+        console.error("[inscription] welcome convive ERREUR:", JSON.stringify(err));
       }
     }
 
@@ -127,7 +143,6 @@ export async function POST(req: NextRequest) {
       });
       restaurantId = restaurant.id;
 
-      // Fire-and-forget — l'email n'est pas critique pour la réponse
       sendWelcomeRestaurantEmail(
         email.trim().toLowerCase(),
         prenom.trim(),
@@ -140,7 +155,6 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (err: unknown) {
-    // Prisma unique constraint violation (P2002)
     if (
       typeof err === "object" &&
       err !== null &&
@@ -163,9 +177,6 @@ export async function POST(req: NextRequest) {
     }
 
     console.error("[POST /api/inscription]", err);
-    return NextResponse.json(
-      { error: "Erreur interne. Veuillez réessayer." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erreur interne. Veuillez réessayer." }, { status: 500 });
   }
 }
