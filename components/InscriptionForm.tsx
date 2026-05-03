@@ -139,6 +139,7 @@ export default function InscriptionForm() {
           ? {
               prenom: formData.prenom,
               email: formData.email,
+              password: formData.password,
               phone: formData.phone,
               type: formData.type,
               categorie: formData.categorie,
@@ -280,20 +281,18 @@ export default function InscriptionForm() {
         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
       </div>
 
-      {/* Mot de passe — convive uniquement */}
-      {formData.type === "particulier" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Mot de passe <span className="text-[#1D9E75]">*</span>
-          </label>
-          <input type="password" autoComplete="new-password" placeholder="Au moins 6 caractères"
-            value={formData.password}
-            onChange={(e) => { setFormData((d) => ({ ...d, password: e.target.value })); if (errors.password) setErrors((er) => ({ ...er, password: undefined })); }}
-            className={`input-field ${errors.password ? "border-red-400 focus:ring-red-400" : ""}`}
-          />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-        </div>
-      )}
+      {/* Mot de passe — tous les types */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          Mot de passe <span className="text-[#1D9E75]">*</span>
+        </label>
+        <input type="password" autoComplete="new-password" placeholder="Au moins 6 caractères"
+          value={formData.password}
+          onChange={(e) => { setFormData((d) => ({ ...d, password: e.target.value })); if (errors.password) setErrors((er) => ({ ...er, password: undefined })); }}
+          className={`input-field ${errors.password ? "border-red-400 focus:ring-red-400" : ""}`}
+        />
+        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+      </div>
 
       {/* Téléphone — obligatoire restaurateur, optionnel convive */}
       <div>

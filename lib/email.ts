@@ -1,6 +1,5 @@
 import { Resend } from 'resend'
 import QRCode from 'qrcode'
-import { jsPDF } from 'jspdf'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = 'Repation <contact@repation.fr>'
@@ -84,57 +83,14 @@ export async function sendConfirmationEmail(
   return send(to, '✅ Votre réservation Repation est confirmée !', html)
 }
 
-// ─── Génération PDF avec les 2 QR codes du restaurant ────────────────────────
+// ─── Génération QR code PNG ───────────────────────────────────────────────────
 
-async function generateQRCodesPDF(slug: string): Promise<Buffer> {
-  const qrOptions: QRCode.QRCodeToDataURLOptions = {
-    width: 280, margin: 2, errorCorrectionLevel: 'M',
-  }
-  const [qrCheckin, qrPromo] = await Promise.all([
-    QRCode.toDataURL(`https://www.repation.fr/check-in/${slug}`, {
-      ...qrOptions, color: { dark: '#1D9E75', light: '#FFFFFF' },
-    }),
-    QRCode.toDataURL('https://www.repation.fr', {
-      ...qrOptions, color: { dark: '#1a1a1a', light: '#FFFFFF' },
-    }),
-  ])
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-
-  // Titre
-  doc.setFontSize(22)
-  doc.setTextColor(29, 158, 117)
-  doc.text('Repation — Vos QR codes', 105, 22, { align: 'center' })
-
-  // QR 1
-  doc.setFontSize(13)
-  doc.setTextColor(17, 24, 39)
-  doc.text('QR Code 1 — Validation de présence', 105, 40, { align: 'center' })
-  doc.setFontSize(10)
-  doc.setTextColor(107, 114, 128)
-  doc.text('Les convives scannent ce code dès leur arrivée', 105, 47, { align: 'center' })
-  doc.addImage(qrCheckin, 'PNG', 60, 52, 90, 90)
-  doc.setFontSize(9)
-  doc.setTextColor(107, 114, 128)
-  doc.text(`repation.fr/check-in/${slug}`, 105, 147, { align: 'center' })
-
-  // Séparateur
-  doc.setDrawColor(229, 231, 235)
-  doc.line(20, 155, 190, 155)
-
-  // QR 2
-  doc.setFontSize(13)
-  doc.setTextColor(17, 24, 39)
-  doc.text('QR Code 2 — Découvrir Repation', 105, 168, { align: 'center' })
-  doc.setFontSize(10)
-  doc.setTextColor(107, 114, 128)
-  doc.text('À afficher en salle pour inviter vos clients à rejoindre Repation', 105, 175, { align: 'center' })
-  doc.addImage(qrPromo, 'PNG', 60, 180, 90, 90)
-  doc.setFontSize(9)
-  doc.setTextColor(107, 114, 128)
-  doc.text('repation.fr', 105, 275, { align: 'center' })
-
-  return Buffer.from(doc.output('arraybuffer'))
+async function generateQRCodePNG(url: string, darkColor: string): Promise<Buffer> {
+  const dataUrl = await QRCode.toDataURL(url, {
+    width: 400, margin: 2, errorCorrectionLevel: 'M',
+    color: { dark: darkColor, light: '#FFFFFF' },
+  })
+  return Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64')
 }
 
 // ─── Notification nouvelle réservation (restaurateur) ─────────────────────────
@@ -171,17 +127,20 @@ export async function sendRestaurantNotificationEmail(
      </p>`
   )
 
-  const pdfBuffer = await generateQRCodesPDF(slug)
+  const [qrCheckinBuffer, qrPromoBuffer] = await Promise.all([
+    generateQRCodePNG(`https://www.repation.fr/check-in/${slug}`, '#1D9E75'),
+    generateQRCodePNG('https://www.repation.fr', '#1a1a1a'),
+  ])
 
   return resend.emails.send({
     from: FROM,
     to,
     subject: '🍽️ Nouvelle réservation Repation !',
     html,
-    attachments: [{
-      filename: `qr-codes-${slug}.pdf`,
-      content: pdfBuffer,
-    }],
+    attachments: [
+      { filename: `qr-checkin-${slug}.png`, content: qrCheckinBuffer },
+      { filename: 'qr-repation.png', content: qrPromoBuffer },
+    ],
   })
 }
 
