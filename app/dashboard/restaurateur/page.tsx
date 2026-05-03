@@ -140,12 +140,13 @@ export default async function RestaurateurDashboard() {
     <div
       className="min-h-screen"
       style={restaurant.photoUrl ? {
-        backgroundImage: `linear-gradient(rgba(29, 158, 117, 0.85), rgba(29, 158, 117, 0.85)), url(${restaurant.photoUrl})`,
+        backgroundImage: `url(${restaurant.photoUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
       } : { background: '#F8F9FA' }}
     >
+      <div style={restaurant.photoUrl ? { backgroundColor: 'rgba(255, 255, 255, 0.85)', minHeight: '100vh' } : undefined}>
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -279,6 +280,7 @@ export default async function RestaurateurDashboard() {
         </div>
 
       </main>
+      </div>
     </div>
   )
 }
