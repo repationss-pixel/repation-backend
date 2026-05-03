@@ -88,6 +88,12 @@ export async function POST(req: NextRequest) {
     if (!PHONE_RE.test(normalizedPhone)) {
       return NextResponse.json({ error: "Numéro de téléphone invalide." }, { status: 422 });
     }
+    if (!password || password.length < 6) {
+      return NextResponse.json(
+        { error: "Le mot de passe doit contenir au moins 6 caractères." },
+        { status: 422 }
+      );
+    }
   }
 
   // ── Persistence ─────────────────────────────────────────────────────────────
@@ -106,6 +112,7 @@ export async function POST(req: NextRequest) {
         : {
             prenom: prenom.trim(),
             email: email.trim().toLowerCase(),
+            passwordHash: await bcrypt.hash(password!, 10),
             phone: normalizePhone(phone!),
             type: userType,
           };

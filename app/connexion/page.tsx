@@ -9,7 +9,6 @@ export default function ConnexionPage() {
   const [userType, setUserType] = useState<UserType>("convive");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,10 +18,7 @@ export default function ConnexionPage() {
     setLoading(true);
 
     try {
-      const body =
-        userType === "convive"
-          ? { email: email.trim(), password, type: "convive" }
-          : { email: email.trim(), phone, type: "restaurateur" };
+      const body = { email: email.trim(), password, type: userType };
 
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -101,37 +97,20 @@ export default function ConnexionPage() {
               />
             </div>
 
-            {userType === "convive" ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Mot de passe
-                </label>
-                <input
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Numéro de téléphone
-                </label>
-                <input
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="06 12 34 56 78"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Mot de passe
+              </label>
+              <input
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent"
+              />
+            </div>
 
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">

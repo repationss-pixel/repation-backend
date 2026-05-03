@@ -87,6 +87,11 @@ export default function InscriptionForm() {
       }
     }
     if (formData.type === "restaurateur") {
+      if (!formData.password) {
+        newErrors.password = "Le mot de passe est requis.";
+      } else if (formData.password.length < 6) {
+        newErrors.password = "Le mot de passe doit contenir au moins 6 caractères.";
+      }
       if (!formData.phone.trim()) {
         newErrors.phone = "Le numéro de téléphone est requis.";
       } else if (!validatePhone(formData.phone)) {

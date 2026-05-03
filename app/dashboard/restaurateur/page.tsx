@@ -137,7 +137,15 @@ export default async function RestaurateurDashboard() {
   const upcomingSlots = Array.from(slotMap.values())
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div
+      className="min-h-screen"
+      style={restaurant.photoUrl ? {
+        backgroundImage: `linear-gradient(rgba(29, 158, 117, 0.85), rgba(29, 158, 117, 0.85)), url(${restaurant.photoUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      } : { background: '#F8F9FA' }}
+    >
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">

@@ -126,7 +126,8 @@ export async function POST(req: NextRequest) {
         await sendRestaurantNotificationEmail(
           restaurateur.email,
           reservation.restaurant.nom,
-          creneauDate.toISOString()
+          creneauDate.toISOString(),
+          reservation.restaurant.slug
         )
         console.log('[email/restaurant-notification] envoyé à', restaurateur.email)
       }
