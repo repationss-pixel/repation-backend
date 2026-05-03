@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import AddressAutocomplete from "./AddressAutocomplete";
 
@@ -25,6 +25,7 @@ interface FormData {
   adresse: string;
   latitude: number | null;
   longitude: number | null;
+  photoUrl: string | null;
 }
 
 interface FormErrors {
@@ -56,11 +57,16 @@ export default function InscriptionForm() {
     adresse: "",
     latitude: null,
     longitude: null,
+    photoUrl: null,
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
@@ -76,6 +82,9 @@ export default function InscriptionForm() {
       } else if (formData.password.length < 6) {
         newErrors.password = "Le mot de passe doit contenir au moins 6 caractères.";
       }
+      if (formData.phone.trim() && !validatePhone(formData.phone)) {
+        newErrors.phone = "Numéro invalide (ex: 06 12 34 56 78 ou +33612345678).";
+      }
     }
     if (formData.type === "restaurateur") {
       if (!formData.phone.trim()) {
@@ -89,6 +98,27 @@ export default function InscriptionForm() {
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError("");
+    setPhotoPreview(URL.createObjectURL(file));
+    setPhotoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload/restaurant-photo", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) { setPhotoError(data.error ?? "Erreur upload."); setPhotoPreview(null); return; }
+      setFormData((d) => ({ ...d, photoUrl: data.url }));
+    } catch {
+      setPhotoError("Erreur réseau lors de l'upload.");
+      setPhotoPreview(null);
+    } finally {
+      setPhotoUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -110,11 +140,13 @@ export default function InscriptionForm() {
               adresse: formData.adresse,
               latitude: formData.latitude,
               longitude: formData.longitude,
+              photoUrl: formData.photoUrl,
             }
           : {
               prenom: formData.prenom,
               email: formData.email,
               password: formData.password,
+              phone: formData.phone || undefined,
               type: formData.type,
             };
 
@@ -125,10 +157,7 @@ export default function InscriptionForm() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Une erreur est survenue.");
-      }
+      if (!res.ok) throw new Error(data.error || "Une erreur est survenue.");
 
       if (formData.type === "restaurateur" && data.restaurantId) {
         setRestaurantId(data.restaurantId);
@@ -146,10 +175,7 @@ export default function InscriptionForm() {
   if (status === "card" && restaurantId) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-8">
-        <RestaurantCardSetup
-          restaurantId={restaurantId}
-          onSuccess={() => setStatus("complete")}
-        />
+        <RestaurantCardSetup restaurantId={restaurantId} onSuccess={() => setStatus("complete")} />
       </div>
     );
   }
@@ -177,19 +203,14 @@ export default function InscriptionForm() {
             <p className="text-sm font-semibold text-gray-900">Vos QR codes arrivent par email</p>
           </div>
           <p className="text-sm text-gray-500 leading-relaxed">
-            Vous recevrez <strong>2 QR codes</strong> à imprimer et disposer sur vos tables — un par convive. Les convives les scannent pour confirmer leur présence et activer votre compteur mensuel.
+            Vous recevrez <strong>2 QR codes</strong> à imprimer et disposer sur vos tables.
           </p>
         </div>
         <div className="space-y-2">
-          <a
-            href="/dashboard/restaurateur"
-            className="block w-full bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
-          >
+          <a href="/dashboard/restaurateur" className="block w-full bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold py-3.5 rounded-xl transition-colors text-sm">
             Accéder à mon tableau de bord →
           </a>
-          <p className="text-xs text-gray-400">
-            Surveillez votre boîte mail ({formData.email})
-          </p>
+          <p className="text-xs text-gray-400">Surveillez votre boîte mail ({formData.email})</p>
         </div>
       </div>
     );
@@ -202,42 +223,25 @@ export default function InscriptionForm() {
         <div className="text-5xl mb-4">🎉</div>
         <h3 className="text-2xl font-bold text-gray-900 mb-2">Compte créé !</h3>
         <p className="text-gray-600 mb-6">
-          Bienvenue{" "}
-          <span className="font-semibold text-[#1D9E75]">{formData.prenom}</span>
-          &nbsp;! Votre compte est prêt.
+          Bienvenue <span className="font-semibold text-[#1D9E75]">{formData.prenom}</span>&nbsp;!
         </p>
-        <a
-          href="/connexion"
-          className="inline-block bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
-        >
+        <a href="/connexion" className="inline-block bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
           Se connecter →
         </a>
-        <p className="text-sm text-gray-400 mt-4">
-          Surveillez votre boîte mail ({formData.email})
-        </p>
+        <p className="text-sm text-gray-400 mt-4">Surveillez votre boîte mail ({formData.email})</p>
       </div>
     );
   }
 
   // ── Formulaire principal ──────────────────────────────────────────────────
   return (
-    <form
-      onSubmit={handleSubmit}
-      noValidate
-      className="bg-white rounded-2xl border border-gray-100 shadow-lg p-8 space-y-5"
-    >
-      {/* Choix de profil */}
+    <form onSubmit={handleSubmit} noValidate className="bg-white rounded-2xl border border-gray-100 shadow-lg p-8 space-y-5">
+      {/* Toggle */}
       <div className="flex rounded-xl border border-gray-200 overflow-hidden">
         {(["particulier", "restaurateur"] as UserType[]).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => { setFormData((d) => ({ ...d, type: t })); setErrors({}); }}
-            className={`flex-1 py-3 text-sm font-semibold transition-all duration-200 ${
-              formData.type === t
-                ? "bg-[#1D9E75] text-white shadow-inner"
-                : "bg-white text-gray-500 hover:bg-gray-50"
-            }`}
+          <button key={t} type="button"
+            onClick={() => { setFormData((d) => ({ ...d, type: t })); setErrors({}); setPhotoPreview(null); setPhotoError(""); }}
+            className={`flex-1 py-3 text-sm font-semibold transition-all duration-200 ${formData.type === t ? "bg-[#1D9E75] text-white shadow-inner" : "bg-white text-gray-500 hover:bg-gray-50"}`}
           >
             {t === "particulier" ? "👤 Je suis un convive" : "🍴 Je suis restaurateur"}
           </button>
@@ -247,18 +251,12 @@ export default function InscriptionForm() {
       {/* Prénom / Nom établissement */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          {formData.type === "restaurateur" ? "Nom de votre établissement" : "Prénom"}{" "}
-          <span className="text-[#1D9E75]">*</span>
+          {formData.type === "restaurateur" ? "Nom de votre établissement" : "Prénom"} <span className="text-[#1D9E75]">*</span>
         </label>
-        <input
-          type="text"
-          autoComplete="given-name"
+        <input type="text" autoComplete="given-name"
           placeholder={formData.type === "restaurateur" ? "Le Bistrot Parisien" : "Marie"}
           value={formData.prenom}
-          onChange={(e) => {
-            setFormData((d) => ({ ...d, prenom: e.target.value }));
-            if (errors.prenom) setErrors((er) => ({ ...er, prenom: undefined }));
-          }}
+          onChange={(e) => { setFormData((d) => ({ ...d, prenom: e.target.value })); if (errors.prenom) setErrors((er) => ({ ...er, prenom: undefined })); }}
           className={`input-field ${errors.prenom ? "border-red-400 focus:ring-red-400" : ""}`}
         />
         {errors.prenom && <p className="text-red-500 text-xs mt-1">{errors.prenom}</p>}
@@ -269,15 +267,9 @@ export default function InscriptionForm() {
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
           Email <span className="text-[#1D9E75]">*</span>
         </label>
-        <input
-          type="email"
-          autoComplete="email"
-          placeholder="marie@exemple.fr"
+        <input type="email" autoComplete="email" placeholder="marie@exemple.fr"
           value={formData.email}
-          onChange={(e) => {
-            setFormData((d) => ({ ...d, email: e.target.value }));
-            if (errors.email) setErrors((er) => ({ ...er, email: undefined }));
-          }}
+          onChange={(e) => { setFormData((d) => ({ ...d, email: e.target.value })); if (errors.email) setErrors((er) => ({ ...er, email: undefined })); }}
           className={`input-field ${errors.email ? "border-red-400 focus:ring-red-400" : ""}`}
         />
         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -289,64 +281,45 @@ export default function InscriptionForm() {
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Mot de passe <span className="text-[#1D9E75]">*</span>
           </label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            placeholder="Au moins 6 caractères"
+          <input type="password" autoComplete="new-password" placeholder="Au moins 6 caractères"
             value={formData.password}
-            onChange={(e) => {
-              setFormData((d) => ({ ...d, password: e.target.value }));
-              if (errors.password) setErrors((er) => ({ ...er, password: undefined }));
-            }}
+            onChange={(e) => { setFormData((d) => ({ ...d, password: e.target.value })); if (errors.password) setErrors((er) => ({ ...er, password: undefined })); }}
             className={`input-field ${errors.password ? "border-red-400 focus:ring-red-400" : ""}`}
           />
           {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
         </div>
       )}
 
+      {/* Téléphone — obligatoire restaurateur, optionnel convive */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          Téléphone{formData.type === "restaurateur" && <span className="text-[#1D9E75]"> *</span>}
+          {formData.type === "particulier" && <span className="text-gray-400 font-normal"> (optionnel)</span>}
+        </label>
+        <input type="tel" autoComplete="tel" placeholder="06 12 34 56 78"
+          value={formData.phone}
+          onChange={(e) => { setFormData((d) => ({ ...d, phone: e.target.value })); if (errors.phone) setErrors((er) => ({ ...er, phone: undefined })); }}
+          className={`input-field ${errors.phone ? "border-red-400 focus:ring-red-400" : ""}`}
+        />
+        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+      </div>
+
       {/* Champs restaurateur */}
       {formData.type === "restaurateur" && (
         <>
-          {/* Téléphone */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Téléphone <span className="text-[#1D9E75]">*</span>
-            </label>
-            <input
-              type="tel"
-              autoComplete="tel"
-              placeholder="06 12 34 56 78"
-              value={formData.phone}
-              onChange={(e) => {
-                setFormData((d) => ({ ...d, phone: e.target.value }));
-                if (errors.phone) setErrors((er) => ({ ...er, phone: undefined }));
-              }}
-              className={`input-field ${errors.phone ? "border-red-400 focus:ring-red-400" : ""}`}
-            />
-            {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-          </div>
-
           {/* Catégorie */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Catégorie de l&apos;établissement <span className="text-[#1D9E75]">*</span>
             </label>
-            <select
-              value={formData.categorie}
-              onChange={(e) =>
-                setFormData((d) => ({ ...d, categorie: e.target.value as CategorieRestaurant }))
-              }
+            <select value={formData.categorie}
+              onChange={(e) => setFormData((d) => ({ ...d, categorie: e.target.value as CategorieRestaurant }))}
               className="input-field appearance-none bg-white"
             >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
+              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
             <p className="text-xs text-gray-400 mt-1.5">
-              Le tarif Repation est calculé selon la catégorie de votre établissement.
-              Toute fausse déclaration entraîne la résiliation du partenariat.
+              Le tarif Repation est calculé selon la catégorie. Toute fausse déclaration entraîne la résiliation.
             </p>
           </div>
 
@@ -356,20 +329,60 @@ export default function InscriptionForm() {
               Adresse de votre établissement <span className="text-[#1D9E75]">*</span>
             </label>
             <AddressAutocomplete
-              onPlaceSelected={({ address, lat, lng }) => {
-                setFormData((d) => ({ ...d, adresse: address, latitude: lat, longitude: lng }));
-                setErrors((er) => ({ ...er, adresse: undefined }));
-              }}
+              onPlaceSelected={({ address, lat, lng }) => { setFormData((d) => ({ ...d, adresse: address, latitude: lat, longitude: lng })); setErrors((er) => ({ ...er, adresse: undefined })); }}
               className={`input-field ${errors.adresse ? "border-red-400 focus:ring-red-400" : ""}`}
               placeholder="Ex : Le Bistrot Parisien, 12 rue de Rivoli, Paris"
             />
             {errors.adresse ? (
               <p className="text-red-500 text-xs mt-1">{errors.adresse}</p>
             ) : (
-              <p className="text-xs text-gray-400 mt-1.5">
-                Sélectionnez votre adresse dans les suggestions.
-              </p>
+              <p className="text-xs text-gray-400 mt-1.5">Sélectionnez votre adresse dans les suggestions.</p>
             )}
+          </div>
+
+          {/* Photo établissement */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Photo de votre établissement <span className="text-gray-400 font-normal">(optionnel)</span>
+            </label>
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+              onChange={handlePhotoChange}
+            />
+            {photoPreview ? (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photoPreview} alt="Aperçu" className="w-full h-40 object-cover rounded-xl border border-gray-200" />
+                {photoUploading && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl">
+                    <svg className="animate-spin w-6 h-6 text-[#1D9E75]" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                  </div>
+                )}
+                {!photoUploading && formData.photoUrl && (
+                  <div className="absolute top-2 right-2 bg-[#1D9E75] text-white text-xs font-semibold px-2 py-1 rounded-lg">
+                    ✓ Uploadée
+                  </div>
+                )}
+                <button type="button" onClick={() => { setPhotoPreview(null); setFormData((d) => ({ ...d, photoUrl: null })); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                  className="mt-2 text-xs text-gray-400 hover:text-red-500 underline"
+                >
+                  Supprimer la photo
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-gray-200 rounded-xl py-8 flex flex-col items-center gap-2 hover:border-[#1D9E75] hover:bg-[#1D9E75]/5 transition-colors text-gray-400 hover:text-[#1D9E75]"
+              >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-sm font-medium">Ajouter une photo</span>
+                <span className="text-xs">JPG, PNG ou WebP · max 5 Mo</span>
+              </button>
+            )}
+            {photoError && <p className="text-red-500 text-xs mt-1">{photoError}</p>}
           </div>
         </>
       )}
@@ -381,34 +394,19 @@ export default function InscriptionForm() {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={status === "loading"}
+      <button type="submit" disabled={status === "loading" || photoUploading}
         className="btn-primary w-full text-base py-4 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {status === "loading" ? (
-          <>
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            Inscription en cours…
-          </>
-        ) : formData.type === "particulier" ? (
-          "Créer mon compte →"
-        ) : (
-          "Je rejoins la liste d'attente →"
-        )}
+          <><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>Inscription en cours…</>
+        ) : formData.type === "particulier" ? "Créer mon compte →" : "Je rejoins la liste d'attente →"}
       </button>
 
       <p className="text-xs text-gray-400 text-center">
         En vous inscrivant, vous acceptez nos{" "}
         <a href="/cgu" target="_blank" className="underline hover:text-gray-600">CGU</a>
         {" "}et notre{" "}
-        <a href="/confidentialite" target="_blank" className="underline hover:text-gray-600">
-          politique de confidentialité
-        </a>
-        .
+        <a href="/confidentialite" target="_blank" className="underline hover:text-gray-600">politique de confidentialité</a>.
       </p>
     </form>
   );

@@ -10,6 +10,7 @@ interface Restaurant {
   adresse: string;
   categorie: RestaurantCategorie;
   slug: string;
+  photoUrl: string | null;
 }
 
 const CATEGORIE_LABEL: Record<RestaurantCategorie, string> = {
@@ -73,8 +74,20 @@ export default function RechercheClient({ restaurants }: { restaurants: Restaura
             {visible.map((r) => (
               <div
                 key={r.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-3 hover:shadow-md transition-shadow"
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden hover:shadow-md transition-shadow"
               >
+                {/* Photo */}
+                {r.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.photoUrl} alt={r.nom} className="w-full h-40 object-cover" />
+                ) : (
+                  <div className="w-full h-40 bg-gradient-to-br from-[#1D9E75]/10 to-[#1D9E75]/5 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-[#1D9E75]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+                <div className="p-5 flex flex-col gap-3">
                 {/* Catégorie badge */}
                 <span className="inline-block self-start text-xs font-semibold text-[#1D9E75] bg-[#1D9E75]/10 px-2.5 py-1 rounded-full">
                   {CATEGORIE_LABEL[r.categorie]}
@@ -96,6 +109,7 @@ export default function RechercheClient({ restaurants }: { restaurants: Restaura
                 >
                   Rejoindre une table →
                 </Link>
+                </div>
               </div>
             ))}
           </div>

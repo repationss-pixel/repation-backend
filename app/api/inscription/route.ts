@@ -14,6 +14,7 @@ interface InscriptionBody {
   adresse?: string;
   latitude?: number;
   longitude?: number;
+  photoUrl?: string;
 }
 
 const CATEGORIES_VALIDES: RestaurantCategorie[] = [
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { prenom, email, password, phone, type, categorie, adresse, latitude, longitude } = body;
+  const { prenom, email, password, phone, type, categorie, adresse, latitude, longitude, photoUrl } = body;
 
   // ── Validation commune ──────────────────────────────────────────────────────
   if (!prenom?.trim()) {
@@ -91,12 +92,15 @@ export async function POST(req: NextRequest) {
 
   // ── Persistence ─────────────────────────────────────────────────────────────
   try {
+    const phoneNormalized = phone ? normalizePhone(phone) : null;
+
     const userData =
       userType === UserType.PARTICULIER
         ? {
             prenom: prenom.trim(),
             email: email.trim().toLowerCase(),
             passwordHash: await bcrypt.hash(password!, 10),
+            phone: phoneNormalized,
             type: userType,
           }
         : {
@@ -137,6 +141,7 @@ export async function POST(req: NextRequest) {
           longitude: longitude ?? 0,
           categorie: categorieEnum,
           slug,
+          photoUrl: photoUrl ?? null,
           restaurateurId: user.id,
         },
         select: { id: true, slug: true },

@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default async function RestaurantPage({ params }: { params: { slug: string } }) {
   const restaurant = await prisma.restaurant.findUnique({
     where: { slug: params.slug },
-    select: { id: true, nom: true, adresse: true, categorie: true, slug: true },
+    select: { id: true, nom: true, adresse: true, categorie: true, slug: true, photoUrl: true },
   });
 
   if (!restaurant) notFound();
@@ -44,18 +44,30 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
 
       <main className="max-w-2xl mx-auto px-6 py-10 space-y-8">
         {/* Fiche restaurant */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
-          <span className="inline-block text-xs font-semibold text-[#1D9E75] bg-[#1D9E75]/10 px-2.5 py-1 rounded-full">
-            {CATEGORIE_LABEL[restaurant.categorie]}
-          </span>
-          <h1 className="text-2xl font-extrabold text-gray-900">{restaurant.nom}</h1>
-          <p className="text-sm text-gray-500 flex items-start gap-1.5">
-            <svg className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {restaurant.adresse}
-          </p>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {restaurant.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={restaurant.photoUrl} alt={restaurant.nom} className="w-full h-52 object-cover" />
+          ) : (
+            <div className="w-full h-52 bg-gradient-to-br from-[#1D9E75]/10 to-[#1D9E75]/5 flex items-center justify-center">
+              <svg className="w-14 h-14 text-[#1D9E75]/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          )}
+          <div className="p-6 space-y-3">
+            <span className="inline-block text-xs font-semibold text-[#1D9E75] bg-[#1D9E75]/10 px-2.5 py-1 rounded-full">
+              {CATEGORIE_LABEL[restaurant.categorie]}
+            </span>
+            <h1 className="text-2xl font-extrabold text-gray-900">{restaurant.nom}</h1>
+            <p className="text-sm text-gray-500 flex items-start gap-1.5">
+              <svg className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {restaurant.adresse}
+            </p>
+          </div>
         </div>
 
         {/* Réservation */}

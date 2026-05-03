@@ -206,6 +206,7 @@ export default function Home() {
 
             {/* Left */}
             <div className="py-16 lg:py-0 lg:pr-8">
+              <p className="text-[#1D9E75] font-black text-3xl tracking-tight mb-8">Repation</p>
               <h1 className="text-5xl sm:text-6xl font-extrabold leading-[1.08] mb-6 tracking-tight">
                 <span className="text-gray-900">Le hasard</span>
                 <br />

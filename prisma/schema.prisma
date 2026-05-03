@@ -52,6 +52,7 @@ model Restaurant {
   longitude        Float
   categorie        RestaurantCategorie
   slug             String               @unique
+  photoUrl         String?
   ticketMoyen      Float         @default(35)
   stripeCustomerId String?
   restaurateurId   String?
