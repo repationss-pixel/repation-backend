@@ -123,7 +123,7 @@ export default function Home() {
             </div>
 
             {/* Right — Map interactive */}
-            <div className="hidden lg:flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-12">
               <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100" style={{ height: "500px", width: "100%" }}>
                 <MapInteractive />
               </div>
