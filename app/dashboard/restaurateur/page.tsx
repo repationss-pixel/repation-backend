@@ -65,7 +65,37 @@ export default async function RestaurateurDashboard() {
   }
 
   if (!restaurant) {
-    return <ErrorState message="Aucun restaurant lié à votre compte." />
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 max-w-sm w-full text-center space-y-5">
+          <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center mx-auto">
+            <svg className="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Aucun restaurant lié</h2>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Aucun restaurant n&apos;est associé à votre compte.{" "}
+              <a href="/contact" className="text-[#1D9E75] hover:underline font-medium">
+                Contactez-nous sur repation.fr/contact
+              </a>
+            </p>
+          </div>
+          <form action="/api/auth/logout" method="POST">
+            <button
+              type="submit"
+              className="w-full bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+            >
+              Se déconnecter
+            </button>
+          </form>
+          <Link href="/" className="block text-xs text-gray-400 hover:text-gray-600">
+            ← Retour à l&apos;accueil
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   const now = new Date()

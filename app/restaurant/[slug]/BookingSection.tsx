@@ -42,15 +42,17 @@ function SlotCard({
   const hasConvive = count === 1;
 
   return (
-    <div
-      onClick={!isFull ? onSelect : undefined}
+    <button
+      type="button"
+      disabled={isFull}
+      onClick={onSelect}
       className={`
-        flex flex-col items-center gap-2 rounded-xl border p-3 transition-all
+        flex flex-col items-center gap-2 rounded-xl border p-3 w-full transition-all
         ${isFull
           ? "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
           : selected
-          ? "border-[#1D9E75] bg-[#1D9E75]/5 shadow-sm cursor-pointer"
-          : "border-gray-200 bg-white hover:border-[#1D9E75] hover:shadow-sm cursor-pointer"
+          ? "border-[#1D9E75] bg-[#1D9E75]/5 shadow-sm"
+          : "border-gray-200 bg-white hover:border-[#1D9E75] hover:shadow-sm"
         }
       `}
     >
@@ -63,31 +65,25 @@ function SlotCard({
         <div className={`w-5 h-5 rounded-full border-2 ${count >= 2 ? "bg-[#1D9E75] border-[#1D9E75]" : "bg-white border-gray-300"}`} />
       </div>
 
-      {/* Statut + bouton */}
+      {/* Statut */}
       {isFull ? (
         <span className="text-xs text-gray-400 text-center leading-tight">Table complète</span>
       ) : hasConvive ? (
         <>
           <span className="text-xs text-[#1D9E75] font-semibold text-center leading-tight">1 convive vous attend !</span>
-          <button
-            className="w-full bg-[#1D9E75] text-white text-xs font-bold py-1.5 rounded-lg animate-pulse"
-            onClick={(e) => { e.stopPropagation(); onSelect(); }}
-          >
+          <span className="w-full bg-[#1D9E75] text-white text-xs font-bold py-1.5 rounded-lg animate-pulse text-center">
             Rejoindre la table
-          </button>
+          </span>
         </>
       ) : (
         <>
           <span className="text-xs text-gray-400 text-center leading-tight">2 places libres</span>
-          <button
-            className="w-full bg-[#1D9E75] hover:bg-[#178560] text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
-            onClick={(e) => { e.stopPropagation(); onSelect(); }}
-          >
+          <span className="w-full bg-[#1D9E75] text-white text-xs font-bold py-1.5 rounded-lg text-center">
             Rejoindre
-          </button>
+          </span>
         </>
       )}
-    </div>
+    </button>
   );
 }
 
