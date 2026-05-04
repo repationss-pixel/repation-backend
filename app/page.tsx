@@ -3,7 +3,7 @@ import InscriptionForm from "@/components/InscriptionForm";
 import { cookies } from "next/headers";
 import nextDynamic from "next/dynamic";
 
-const MapComponent = nextDynamic(() => import("@/components/MapComponent"), { ssr: false });
+const MapInteractive = nextDynamic(() => import("@/components/MapInteractive"), { ssr: false });
 
 export const dynamic = 'force-dynamic'
 
@@ -124,8 +124,8 @@ export default function Home() {
 
             {/* Right — Map interactive */}
             <div className="hidden lg:flex items-center justify-center py-12">
-              <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100" style={{ height: "440px" }}>
-                <MapComponent />
+              <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100" style={{ height: "500px", width: "100%" }}>
+                <MapInteractive />
               </div>
             </div>
 

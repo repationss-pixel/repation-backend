@@ -143,7 +143,7 @@ export default function MapInteractive() {
           <span className="text-sm font-medium text-gray-500">Chargement de la carte…</span>
         </div>
       )}
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: '500px' }} />
     </div>
   )
 }
