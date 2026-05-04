@@ -50,6 +50,7 @@ export default async function MonComptePage() {
   let user: { id: string; prenom: string; email: string; phone: string | null } | null = null;
   let upcoming: ReservationAvecRestaurant[] = [];
   let past: ReservationAvecRestaurant[] = [];
+  const companionCounts: Record<string, number> = {};
 
   try {
     const now = new Date();
@@ -80,6 +81,23 @@ export default async function MonComptePage() {
         take: 20,
       }),
     ]);
+
+    // Compter le convive partenaire pour chaque réservation à venir
+    if (upcoming.length > 0) {
+      const counts = await Promise.all(
+        upcoming.map((r) =>
+          prisma.reservation.count({
+            where: {
+              restaurantId: r.restaurantId,
+              creneau: r.creneau,
+              statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
+              userId: { not: userId },
+            },
+          })
+        )
+      );
+      upcoming.forEach((r, i) => { companionCounts[r.id] = counts[i]; });
+    }
   } catch {
     return (
       <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4">
@@ -190,6 +208,16 @@ export default async function MonComptePage() {
                         <p className="text-xs text-gray-400 mt-0.5 truncate">
                           {r.restaurant.adresse}
                         </p>
+                        {/* Statut convive partenaire */}
+                        {companionCounts[r.id] > 0 ? (
+                          <p className="text-xs text-[#1D9E75] font-semibold mt-1">
+                            ✓ Table confirmée ! Votre convive vous rejoindra.
+                          </p>
+                        ) : (
+                          <p className="text-xs text-gray-400 mt-1 italic">
+                            En attente d&apos;un convive…
+                          </p>
+                        )}
                         {!isLate && (
                           <p className="text-xs text-gray-400 mt-1">
                             Annulation gratuite avant{" "}

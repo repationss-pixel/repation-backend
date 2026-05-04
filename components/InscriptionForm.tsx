@@ -349,6 +349,9 @@ export default function InscriptionForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Photo de votre établissement <span className="text-gray-400 font-normal">(optionnel)</span>
             </label>
+            <p className="text-xs text-gray-500 mb-2 leading-relaxed">
+              📸 Votre photo sera affichée sur votre page Repation et dans les résultats de recherche. Elle aide les convives à reconnaître votre établissement.
+            </p>
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
               onChange={handlePhotoChange}
             />

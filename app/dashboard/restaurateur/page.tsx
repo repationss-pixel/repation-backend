@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { Prisma, ReservationStatut } from '@prisma/client'
 import { calculateInvoice } from '@/lib/billing'
 import LogoutButton from './LogoutButton'
+import UpdatePhotoModal from './UpdatePhotoModal'
+
+const CRENEAUX_MIDI = ['11:30', '12:00', '12:30', '13:00', '13:30']
+const CRENEAUX_SOIR = ['19:00', '19:30', '20:00', '20:30', '21:00']
 
 export const dynamic = 'force-dynamic'
 
@@ -84,9 +88,10 @@ export default async function RestaurateurDashboard() {
   let certifiedVisitIds: { visitId: string | null }[] = []
   let upcoming: ReservationAvecUser[] = []
   let past: ReservationAvecUser[] = []
+  let todaySlotReservations: { creneau: Date }[] = []
 
   try {
-    ;[todayCount, weekCount, certifiedVisitIds, upcoming, past] = await Promise.all([
+    ;[todayCount, weekCount, certifiedVisitIds, upcoming, past, todaySlotReservations] = await Promise.all([
       prisma.reservation.count({
         where: { restaurantId: restaurant.id, creneau: { gte: startOfDay, lt: endOfDay }, statut: { in: activeStatuts } },
       }),
@@ -119,9 +124,24 @@ export default async function RestaurateurDashboard() {
         orderBy: { creneau: 'desc' },
         take: 30,
       }),
+      prisma.reservation.findMany({
+        where: {
+          restaurantId: restaurant.id,
+          creneau: { gte: startOfDay, lt: endOfDay },
+          statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
+        },
+        select: { creneau: true },
+      }),
     ])
   } catch {
     return <ErrorState message="Impossible de charger les données. Veuillez réessayer dans quelques instants." />
+  }
+
+  // Comptage par créneau (heure Paris)
+  const todaySlotCounts: Record<string, number> = {}
+  for (const r of todaySlotReservations) {
+    const hhmm = r.creneau.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
+    todaySlotCounts[hhmm] = (todaySlotCounts[hhmm] ?? 0) + 1
   }
 
   const certifiedCount = certifiedVisitIds.length
@@ -162,7 +182,10 @@ export default async function RestaurateurDashboard() {
             <span className="text-gray-300">|</span>
             <span className="text-sm font-semibold text-gray-700">Tableau de bord</span>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-3">
+            {restaurant.photoUrl && <UpdatePhotoModal currentPhotoUrl={restaurant.photoUrl} />}
+            <LogoutButton />
+          </div>
         </div>
       </header>
 
@@ -197,6 +220,46 @@ export default async function RestaurateurDashboard() {
               <div className="text-xs text-gray-400 mt-0.5">{s.sub}</div>
             </div>
           ))}
+        </div>
+
+        {/* Vue du jour — créneaux */}
+        <div className="border border-gray-100 shadow-sm" style={cardStyle}>
+          <h2 className="text-base font-bold text-gray-900 mb-4">Vue du jour</h2>
+          <div className="space-y-4">
+            {[{ label: 'Midi', slots: CRENEAUX_MIDI }, { label: 'Soir', slots: CRENEAUX_SOIR }].map(({ label, slots }) => (
+              <div key={label}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {slots.map((hhmm) => {
+                    const count = todaySlotCounts[hhmm] ?? 0
+                    const isFull = count >= 2
+                    const hasConvive = count === 1
+                    return (
+                      <div
+                        key={hhmm}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 ${
+                          isFull ? 'bg-gray-50 border-gray-100' : 'bg-white border-gray-200'
+                        }`}
+                      >
+                        <span className={`text-xs font-bold ${isFull ? 'text-gray-400' : 'text-gray-800'}`}>{hhmm}</span>
+                        <div className="flex gap-1">
+                          <div className={`w-4 h-4 rounded-full border-2 ${count >= 1 ? 'bg-[#1D9E75] border-[#1D9E75]' : 'bg-white border-gray-300'}`} />
+                          <div className={`w-4 h-4 rounded-full border-2 ${count >= 2 ? 'bg-[#1D9E75] border-[#1D9E75]' : 'bg-white border-gray-300'}`} />
+                        </div>
+                        {isFull ? (
+                          <span className="text-xs text-[#1D9E75] font-semibold">Complet</span>
+                        ) : hasConvive ? (
+                          <span className="text-xs text-orange-500 font-semibold">1 convive</span>
+                        ) : (
+                          <span className="text-xs text-gray-400">Libre</span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Facture détaillée */}

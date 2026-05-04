@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { RestaurantCategorie } from "@prisma/client";
+import { RestaurantCategorie, ReservationStatut } from "@prisma/client";
 import BookingSection from "./BookingSection";
 
 const CATEGORIE_LABEL: Record<RestaurantCategorie, string> = {
@@ -23,8 +23,32 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
 
   if (!restaurant) notFound();
 
-  // Date de base pour les créneaux = aujourd'hui
+  // Date de base pour les créneaux = aujourd'hui (UTC)
   const dateBase = new Date().toISOString().split("T")[0];
+
+  // Comptage des réservations actives par créneau pour aujourd'hui
+  const [year, month, day] = dateBase.split("-").map(Number);
+  const rangeStart = new Date(Date.UTC(year, month - 1, day, 0, 0));
+  const rangeEnd = new Date(Date.UTC(year, month - 1, day + 1, 0, 0));
+
+  const todayReservations = await prisma.reservation.findMany({
+    where: {
+      restaurantId: restaurant.id,
+      creneau: { gte: rangeStart, lt: rangeEnd },
+      statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
+    },
+    select: { creneau: true },
+  });
+
+  const slotCounts: Record<string, number> = {};
+  for (const r of todayReservations) {
+    const hhmm = r.creneau.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Paris",
+    });
+    slotCounts[hhmm] = (slotCounts[hhmm] ?? 0) + 1;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
@@ -74,6 +98,7 @@ export default async function RestaurantPage({ params }: { params: { slug: strin
         <BookingSection
           restaurant={{ id: restaurant.id, nom: restaurant.nom }}
           dateBase={dateBase}
+          slotCounts={slotCounts}
         />
       </main>
     </div>
