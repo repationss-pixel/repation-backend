@@ -1,9 +1,6 @@
 import SearchPanel from "@/components/SearchPanel";
 import InscriptionForm from "@/components/InscriptionForm";
 import { cookies } from "next/headers";
-import nextDynamic from "next/dynamic";
-
-const MapInteractive = nextDynamic(() => import("@/components/MapInteractive"), { ssr: false });
 
 export const dynamic = 'force-dynamic'
 
@@ -103,32 +100,22 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 min-h-[88vh] items-center">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="flex flex-col items-center text-center min-h-[88vh] justify-center py-16">
+            <p className="text-[#1D9E75] font-black text-3xl tracking-tight mb-8">Repation</p>
+            <h1 className="text-5xl sm:text-6xl font-extrabold leading-[1.08] mb-6 tracking-tight">
+              <span className="text-gray-900">Le hasard</span>
+              <br />
+              <span className="text-[#1D9E75]">vous met à table.</span>
+            </h1>
 
-            {/* Left */}
-            <div className="py-16 lg:py-0 lg:pr-8">
-              <p className="text-[#1D9E75] font-black text-3xl tracking-tight mb-8">Repation</p>
-              <h1 className="text-5xl sm:text-6xl font-extrabold leading-[1.08] mb-6 tracking-tight">
-                <span className="text-gray-900">Le hasard</span>
-                <br />
-                <span className="text-[#1D9E75]">vous met à table.</span>
-              </h1>
+            <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-xl">
+              Repation vous connecte à d&apos;autres convives dans des restaurants partenaires près de chez vous.
+            </p>
 
-              <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-lg">
-                Repation vous connecte à d&apos;autres convives dans des restaurants partenaires près de chez vous.
-              </p>
-
+            <div className="w-full">
               <SearchPanel />
             </div>
-
-            {/* Right — Map interactive */}
-            <div className="flex items-center justify-center py-12">
-              <div className="relative w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl border border-gray-100" style={{ height: "500px", width: "100%" }}>
-                <MapInteractive />
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
