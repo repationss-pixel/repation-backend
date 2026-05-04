@@ -51,6 +51,38 @@ function send(to: string, subject: string, html: string) {
   return resend.emails.send({ from: FROM, to, subject, html })
 }
 
+// ─── Réinitialisation de mot de passe ────────────────────────────────────────
+
+export async function sendPasswordResetEmail(to: string, prenom: string, token: string) {
+  const link = `https://www.repation.fr/nouveau-mot-de-passe?token=${token}`
+  const html = layout(
+    '🔑 Réinitialisation de votre mot de passe', '#1D9E75',
+    `<p style="margin:0 0 20px;font-size:16px;color:#1a1a1a;">Bonjour <strong>${prenom}</strong>,</p>
+     <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
+       Vous avez demandé la réinitialisation de votre mot de passe Repation.
+       Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
+     </p>
+     <div style="text-align:center;margin-bottom:28px;">
+       <a href="${link}"
+         style="display:inline-block;background:#1D9E75;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 36px;border-radius:10px;">
+         Réinitialiser mon mot de passe →
+       </a>
+     </div>
+     <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
+       <p style="margin:0;font-size:13px;color:#374151;">
+         ⏱️ Ce lien est valable <strong>1 heure</strong>.
+         Passé ce délai, vous devrez faire une nouvelle demande.
+       </p>
+     </div>
+     <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">
+       Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email.
+       Votre mot de passe ne sera pas modifié.
+     </p>
+     <p style="margin:0;font-size:14px;color:#6b7280;">L'équipe Repation 🍽️</p>`
+  )
+  return send(to, '🔑 Réinitialisation de votre mot de passe Repation', html)
+}
+
 // ─── Confirmation de réservation (convive) ────────────────────────────────────
 
 export async function sendConfirmationEmail(

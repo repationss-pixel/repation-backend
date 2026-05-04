@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 type UserType = "convive" | "restaurateur";
 
-export default function ConnexionPage() {
+function ConnexionForm() {
+  const searchParams = useSearchParams();
   const [userType, setUserType] = useState<UserType>("convive");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("reset") === "1") setResetSuccess(true);
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,6 +68,11 @@ export default function ConnexionPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+          {resetSuccess && (
+            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 mb-5">
+              ✅ Mot de passe modifié avec succès ! Connectez-vous avec votre nouveau mot de passe.
+            </div>
+          )}
           <h1 className="text-2xl font-bold text-gray-900 mb-5">Se connecter</h1>
 
           {/* Toggle convive / restaurateur */}
@@ -98,9 +110,14 @@ export default function ConnexionPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Mot de passe
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-gray-700">
+                  Mot de passe
+                </label>
+                <Link href="/mot-de-passe-oublie" className="text-xs text-[#1D9E75] hover:underline">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <input
                 type="password"
                 autoComplete="current-password"
@@ -136,5 +153,13 @@ export default function ConnexionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConnexionPage() {
+  return (
+    <Suspense fallback={null}>
+      <ConnexionForm />
+    </Suspense>
   );
 }

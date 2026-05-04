@@ -24,6 +24,8 @@ model User {
   phoneVerified         Boolean       @default(false)
   type                  UserType      @default(PARTICULIER)
   stripePaymentMethodId String?
+  resetToken            String?
+  resetTokenExpiry      DateTime?
   createdAt             DateTime      @default(now())
 
   reservations  Reservation[]
