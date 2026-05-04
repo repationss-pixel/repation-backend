@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/no-scan-check",
+      "schedule": "*/10 * * * *"
+    },
+    {
       "path": "/api/cron/monthly-billing",
       "schedule": "0 8 1 * *"
     }
