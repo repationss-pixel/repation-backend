@@ -213,7 +213,7 @@ export default async function RestaurateurDashboard() {
             <span className="text-sm font-semibold text-gray-700">Tableau de bord</span>
           </div>
           <div className="flex items-center gap-3">
-            {restaurant.photoUrl && <UpdatePhotoModal currentPhotoUrl={restaurant.photoUrl} />}
+            <UpdatePhotoModal currentPhotoUrl={restaurant.photoUrl} />
             <LogoutButton />
           </div>
         </div>
@@ -261,27 +261,26 @@ export default async function RestaurateurDashboard() {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
                 <div className="grid grid-cols-5 gap-2">
                   {slots.map((hhmm) => {
-                    const count = todaySlotCounts[hhmm] ?? 0
-                    const isFull = count >= 2
-                    const hasConvive = count === 1
+                    const rawCount = todaySlotCounts[hhmm] ?? 0
+                    const openSeat = rawCount % 2
+                    const completedTables = Math.floor(rawCount / 2)
                     return (
                       <div
                         key={hhmm}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 ${
-                          isFull ? 'bg-gray-50 border-gray-100' : 'bg-white border-gray-200'
-                        }`}
+                        className="flex flex-col items-center gap-1.5 rounded-xl border p-2.5 bg-white border-gray-200"
                       >
-                        <span className={`text-xs font-bold ${isFull ? 'text-gray-400' : 'text-gray-800'}`}>{hhmm}</span>
+                        <span className="text-xs font-bold text-gray-800">{hhmm}</span>
                         <div className="flex gap-1">
-                          <div className={`w-4 h-4 rounded-full border-2 ${count >= 1 ? 'bg-[#1D9E75] border-[#1D9E75]' : 'bg-white border-gray-300'}`} />
-                          <div className={`w-4 h-4 rounded-full border-2 ${count >= 2 ? 'bg-[#1D9E75] border-[#1D9E75]' : 'bg-white border-gray-300'}`} />
+                          <div className={`w-4 h-4 rounded-full border-2 ${openSeat >= 1 ? 'bg-[#1D9E75] border-[#1D9E75]' : 'bg-white border-gray-300'}`} />
+                          <div className="w-4 h-4 rounded-full border-2 bg-white border-gray-300" />
                         </div>
-                        {isFull ? (
-                          <span className="text-xs text-[#1D9E75] font-semibold">Complet</span>
-                        ) : hasConvive ? (
+                        {openSeat === 1 ? (
                           <span className="text-xs text-orange-500 font-semibold">1 convive</span>
                         ) : (
                           <span className="text-xs text-gray-400">Libre</span>
+                        )}
+                        {completedTables > 0 && (
+                          <span className="text-xs text-[#1D9E75] font-semibold">{completedTables}×✓</span>
                         )}
                       </div>
                     )

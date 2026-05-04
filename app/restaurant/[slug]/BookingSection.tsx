@@ -29,59 +29,64 @@ interface CardPayload {
 
 function SlotCard({
   time,
-  count,
+  rawCount,
   selected,
   onSelect,
 }: {
   time: string;
-  count: number;
+  rawCount: number;
   selected: boolean;
   onSelect: () => void;
 }) {
-  const isFull = count >= 2;
-  const hasConvive = count === 1;
+  // Le créneau n'est jamais bloqué — chaque paire de convives forme une nouvelle table.
+  // count % 2 = 0 → nouvelle table vide ; count % 2 = 1 → 1 convive attend
+  const openSeat = rawCount % 2; // 0 = vide, 1 = 1 convive attend
+  const completedTables = Math.floor(rawCount / 2);
+  const hasConvive = openSeat === 1;
 
   return (
     <button
       type="button"
-      disabled={isFull}
       onClick={onSelect}
       className={`
         flex flex-col items-center gap-2 rounded-xl border p-3 w-full transition-all
-        ${isFull
-          ? "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
-          : selected
+        ${selected
           ? "border-[#1D9E75] bg-[#1D9E75]/5 shadow-sm"
           : "border-gray-200 bg-white hover:border-[#1D9E75] hover:shadow-sm"
         }
       `}
     >
       {/* Heure */}
-      <span className={`text-sm font-bold ${isFull ? "text-gray-400" : "text-gray-900"}`}>{time}</span>
+      <span className="text-sm font-bold text-gray-900">{time}</span>
 
-      {/* 2 places */}
+      {/* 2 places de la table ouverte */}
       <div className="flex gap-1.5">
-        <div className={`w-5 h-5 rounded-full border-2 ${count >= 1 ? "bg-[#1D9E75] border-[#1D9E75]" : "bg-white border-gray-300"}`} />
-        <div className={`w-5 h-5 rounded-full border-2 ${count >= 2 ? "bg-[#1D9E75] border-[#1D9E75]" : "bg-white border-gray-300"}`} />
+        <div className={`w-5 h-5 rounded-full border-2 ${hasConvive ? "bg-[#1D9E75] border-[#1D9E75]" : "bg-white border-gray-300"}`} />
+        <div className="w-5 h-5 rounded-full border-2 bg-white border-gray-300" />
       </div>
 
       {/* Statut */}
-      {isFull ? (
-        <span className="text-xs text-gray-400 text-center leading-tight">Table complète</span>
-      ) : hasConvive ? (
+      {hasConvive ? (
         <>
-          <span className="text-xs text-[#1D9E75] font-semibold text-center leading-tight">1 convive vous attend !</span>
+          <span className="text-xs text-[#1D9E75] font-semibold text-center leading-tight">1 convive attend !</span>
           <span className="w-full bg-[#1D9E75] text-white text-xs font-bold py-1.5 rounded-lg animate-pulse text-center">
             Rejoindre la table
           </span>
         </>
       ) : (
         <>
-          <span className="text-xs text-gray-400 text-center leading-tight">2 places libres</span>
+          <span className="text-xs text-gray-400 text-center leading-tight">Table libre</span>
           <span className="w-full bg-[#1D9E75] text-white text-xs font-bold py-1.5 rounded-lg text-center">
             Rejoindre
           </span>
         </>
+      )}
+
+      {/* Tables déjà complètes */}
+      {completedTables > 0 && (
+        <span className="text-xs text-gray-400 leading-tight">
+          +{completedTables} table{completedTables > 1 ? "s" : ""} complète{completedTables > 1 ? "s" : ""}
+        </span>
       )}
     </button>
   );
@@ -288,7 +293,7 @@ export default function BookingSection({
               <SlotCard
                 key={c}
                 time={c}
-                count={slotCounts[c] ?? 0}
+                rawCount={slotCounts[c] ?? 0}
                 selected={selectedCreneau === c && step === "phone"}
                 onSelect={() => selectSlot(c)}
               />
@@ -303,7 +308,7 @@ export default function BookingSection({
               <SlotCard
                 key={c}
                 time={c}
-                count={slotCounts[c] ?? 0}
+                rawCount={slotCounts[c] ?? 0}
                 selected={selectedCreneau === c && step === "phone"}
                 onSelect={() => selectSlot(c)}
               />
@@ -316,7 +321,7 @@ export default function BookingSection({
         <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
           <p className="text-sm text-gray-600">
             Créneau sélectionné : <strong>{selectedCreneau}</strong>
-            {(slotCounts[selectedCreneau] ?? 0) === 1 && (
+            {(slotCounts[selectedCreneau] ?? 0) % 2 === 1 && (
               <span className="ml-2 text-[#1D9E75] font-semibold">· 1 convive vous attend !</span>
             )}
           </p>
