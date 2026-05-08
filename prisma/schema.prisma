@@ -26,6 +26,11 @@ model User {
   stripePaymentMethodId String?
   resetToken            String?
   resetTokenExpiry      DateTime?
+  photoUrl              String?
+  age                   Int?
+  profession            String?
+  bio                   String?
+  interets              String?
   createdAt             DateTime      @default(now())
 
   reservations  Reservation[]
