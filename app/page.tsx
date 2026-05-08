@@ -1,6 +1,5 @@
 import SearchPanel from "@/components/SearchPanel";
 import InscriptionForm from "@/components/InscriptionForm";
-import Header from "@/components/Header";
 import { cookies } from "next/headers";
 
 export const dynamic = 'force-dynamic'
@@ -45,8 +44,6 @@ const steps = [
   },
 ];
 
-
-
 export default function Home() {
   let sessionPrenom: string | null = null;
   let sessionType: string | null = null;
@@ -65,7 +62,39 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
 
-      <Header />
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center">
+            <img src="/logo-repation.png" alt="Repation" style={{ height: '44px', width: 'auto', display: 'block' }} />
+          </div>
+          <nav className="flex items-center gap-3">
+            {accountLabel ? (
+              <a
+                href={accountHref}
+                className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
+              >
+                Mon compte
+              </a>
+            ) : (
+              <>
+                <a
+                  href="/inscription"
+                  className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+                >
+                  Inscription
+                </a>
+                <a
+                  href="/connexion"
+                  className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
+                >
+                  Connexion
+                </a>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
 
       {/* ── Hero ── */}
       <section className="bg-white">
@@ -77,11 +106,9 @@ export default function Home() {
               <br />
               <span className="text-[#1D9E75]">vous met à table.</span>
             </h1>
-
             <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-xl">
               Repation vous connecte à d&apos;autres convives dans des restaurants partenaires près de chez vous.
             </p>
-
             <div className="w-full">
               <SearchPanel />
             </div>
@@ -100,22 +127,14 @@ export default function Home() {
               En 3 étapes simples, transformez un repas solitaire en moment de convivialité.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300"
-              >
+              <div key={i} className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="w-12 h-12 bg-[#1D9E75]/10 rounded-xl flex items-center justify-center mb-5 text-[#1D9E75]">
                   {step.icon}
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-3">
-                  {step.title}
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {step.description}
-                </p>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
@@ -128,8 +147,7 @@ export default function Home() {
           {accountLabel ? (
             <div className="text-center space-y-6">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-                Bon retour,{" "}
-                <span className="text-[#1D9E75]">{accountLabel}</span>&nbsp;!
+                Bon retour, <span className="text-[#1D9E75]">{accountLabel}</span>&nbsp;!
               </h2>
               <p className="text-lg text-gray-500">Retrouvez vos réservations et votre profil.</p>
               <a
@@ -145,9 +163,7 @@ export default function Home() {
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
                   Rejoindre Repation
                 </h2>
-                <p className="text-lg text-gray-500">
-                  Gratuit pour tous. Restaurateurs et convives.
-                </p>
+                <p className="text-lg text-gray-500">Gratuit pour tous. Restaurateurs et convives.</p>
               </div>
               <InscriptionForm />
             </>
@@ -160,14 +176,10 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-start gap-1">
             <img src="/logo-repation.png" alt="Repation" style={{ height: '32px', width: 'auto', display: 'block' }} />
-            <p className="text-sm text-gray-400 italic">
-              Le hasard vous met à table.
-            </p>
+            <p className="text-sm text-gray-400 italic">Le hasard vous met à table.</p>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} Repation. Tous droits réservés.
-            </p>
+            <p className="text-sm text-gray-400">© {new Date().getFullYear()} Repation. Tous droits réservés.</p>
             <a href="/contact" className="text-sm text-gray-400 hover:text-gray-600 underline">Contact</a>
             <a href="/cgu" className="text-sm text-gray-400 hover:text-gray-600 underline">CGU</a>
             <a href="/confidentialite" className="text-sm text-gray-400 hover:text-gray-600 underline">Confidentialité</a>

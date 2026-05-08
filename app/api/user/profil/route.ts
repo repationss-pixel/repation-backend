@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 function getSession() {
   const raw = cookies().get('repation_session')?.value
   if (!raw) return null
   try {
-    const parsed = JSON.parse(raw)
-    if (parsed.type !== 'PARTICULIER') return null
-    return parsed as { userId: string; type: string; prenom: string }
-  } catch {
-    return null
-  }
+    const p = JSON.parse(raw)
+    if (p.type !== 'PARTICULIER') return null
+    return p as { userId: string }
+  } catch { return null }
 }
 
 export async function GET() {
@@ -20,10 +20,9 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, prenom: true, email: true, photoUrl: true, age: true, profession: true, bio: true, interets: true },
+    select: { photoUrl: true, age: true, profession: true, bio: true, interets: true },
   })
-  if (!user) return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 })
-
+  if (!user) return NextResponse.json({ error: 'Introuvable' }, { status: 404 })
   return NextResponse.json(user)
 }
 
@@ -31,21 +30,12 @@ export async function PATCH(req: NextRequest) {
   const session = getSession()
   if (!session) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
 
-  let body: {
-    photoUrl?: string | null
-    age?: number | null
-    profession?: string | null
-    bio?: string | null
-    interets?: string | null
-  }
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Corps JSON invalide' }, { status: 400 })
-  }
+  let body: { photoUrl?: string | null; age?: number | null; profession?: string | null; bio?: string | null; interets?: string | null }
+  try { body = await req.json() }
+  catch { return NextResponse.json({ error: 'JSON invalide' }, { status: 400 }) }
 
   if (body.bio && body.bio.length > 150) {
-    return NextResponse.json({ error: 'La bio ne peut pas dépasser 150 caractères.' }, { status: 422 })
+    return NextResponse.json({ error: 'Bio trop longue (max 150 caractères).' }, { status: 422 })
   }
 
   await prisma.user.update({
@@ -58,6 +48,5 @@ export async function PATCH(req: NextRequest) {
       ...(body.interets !== undefined && { interets: body.interets }),
     },
   })
-
   return NextResponse.json({ success: true })
 }

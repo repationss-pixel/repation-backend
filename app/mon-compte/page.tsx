@@ -4,13 +4,14 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Prisma, ReservationStatut } from "@prisma/client";
 import CancelButton from "./CancelButton";
-import CompanionReveal from "./CompanionReveal";
+import ProfilSection from "./ProfilSection";
+import CompanionCard from "./CompanionCard";
 
 type ReservationAvecRestaurant = Prisma.ReservationGetPayload<{
   include: { restaurant: { select: { nom: true; adresse: true; slug: true } } };
 }>;
 
-interface CompanionProfile {
+export interface CompanionData {
   prenom: string
   photoUrl: string | null
   age: number | null
@@ -32,13 +33,7 @@ const STATUT_LABEL: Record<ReservationStatut, { label: string; color: string }> 
 
 function fmtSlot(date: Date) {
   return (
-    date.toLocaleDateString("fr-FR", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "Europe/Paris",
-    }) +
+    date.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Europe/Paris" }) +
     " · " +
     date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })
   );
@@ -53,29 +48,26 @@ export default async function MonComptePage() {
     const parsed = JSON.parse(raw);
     if (parsed.type !== "PARTICULIER") redirect("/connexion");
     userId = parsed.userId;
-  } catch {
-    redirect("/connexion");
-  }
+  } catch { redirect("/connexion"); }
 
-  let user: { id: string; prenom: string; email: string; phone: string | null; photoUrl: string | null } | null = null;
+  type UserData = {
+    id: string; prenom: string; email: string; phone: string | null;
+    photoUrl: string | null; age: number | null; profession: string | null; bio: string | null; interets: string | null;
+  }
+  let user: UserData | null = null;
   let upcoming: ReservationAvecRestaurant[] = [];
   let past: ReservationAvecRestaurant[] = [];
-  const companionCounts: Record<string, number> = {};
-  const companionProfiles: Record<string, CompanionProfile | null> = {};
+  const companionMap: Record<string, CompanionData | null> = {};
 
   try {
     const now = new Date();
     [user, upcoming, past] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, prenom: true, email: true, phone: true, photoUrl: true },
+        select: { id: true, prenom: true, email: true, phone: true, photoUrl: true, age: true, profession: true, bio: true, interets: true },
       }),
       prisma.reservation.findMany({
-        where: {
-          userId,
-          creneau: { gte: now },
-          statut: { in: [ReservationStatut.EN_ATTENTE, ReservationStatut.CONFIRMEE] },
-        },
+        where: { userId, creneau: { gte: now }, statut: { in: [ReservationStatut.EN_ATTENTE, ReservationStatut.CONFIRMEE] } },
         include: { restaurant: { select: { nom: true, adresse: true, slug: true } } },
         orderBy: { creneau: "asc" },
       }),
@@ -93,7 +85,6 @@ export default async function MonComptePage() {
       }),
     ]);
 
-    // Compter et récupérer le profil du convive partenaire
     if (upcoming.length > 0) {
       const companions = await Promise.all(
         upcoming.map((r) =>
@@ -104,19 +95,11 @@ export default async function MonComptePage() {
               statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
               userId: { not: userId },
             },
-            include: {
-              user: {
-                select: { prenom: true, photoUrl: true, age: true, profession: true, bio: true, interets: true },
-              },
-            },
+            include: { user: { select: { prenom: true, photoUrl: true, age: true, profession: true, bio: true, interets: true } } },
           })
         )
       );
-      upcoming.forEach((r, i) => {
-        const c = companions[i];
-        companionCounts[r.id] = c ? 1 : 0;
-        companionProfiles[r.id] = c ? c.user : null;
-      });
+      upcoming.forEach((r, i) => { companionMap[r.id] = companions[i]?.user ?? null; });
     }
   } catch {
     return (
@@ -139,100 +122,46 @@ export default async function MonComptePage() {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/">
-              <img src="/logo-repation.png" alt="Repation" style={{ height: "32px", width: "auto" }} />
-            </Link>
+            <Link href="/"><img src="/logo-repation.png" alt="Repation" style={{ height: "32px", width: "auto" }} /></Link>
             <span className="text-gray-300">|</span>
             <span className="text-sm font-semibold text-gray-700">Mon compte</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/mon-profil" className="text-sm font-medium text-[#1D9E75] hover:underline">
-              Mon profil
-            </Link>
-            <form action="/api/auth/logout" method="POST">
-              <button type="submit" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
-                Déconnexion
-              </button>
-            </form>
-          </div>
+          <form action="/api/auth/logout" method="POST">
+            <button type="submit" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">Déconnexion</button>
+          </form>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
 
-        {/* Profil */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1D9E75]/10 flex items-center justify-center text-[#1D9E75] font-bold text-lg">
-              {user.photoUrl ? (
-                <img src={user.photoUrl} alt={user.prenom} className="w-full h-full object-cover" />
-              ) : (
-                user.prenom[0].toUpperCase()
-              )}
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{user.prenom}</h1>
-              <p className="text-sm text-gray-500">Convive Repation</p>
-            </div>
-            <Link
-              href="/mon-profil"
-              className="ml-auto text-xs font-medium text-[#1D9E75] border border-[#1D9E75]/30 px-3 py-1.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
-            >
-              Modifier
-            </Link>
-          </div>
-          <Link
-            href="/mon-profil"
-            className="flex items-center justify-center gap-2 w-full bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold py-3 rounded-xl transition-colors text-sm mb-4"
-          >
-            ✏️ Modifier mon profil →
-          </Link>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="bg-gray-50 rounded-xl px-4 py-3">
-              <p className="text-xs text-gray-400 mb-0.5">Email</p>
-              <p className="font-medium text-gray-800 truncate">{user.email}</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl px-4 py-3">
-              <p className="text-xs text-gray-400 mb-0.5">Téléphone</p>
-              <p className="font-medium text-gray-800">{user.phone ?? "—"}</p>
-            </div>
-          </div>
-        </div>
+        {/* ── Section Profil (formulaire inline) ── */}
+        <ProfilSection user={user} />
 
-        {/* Réservations à venir */}
+        {/* ── Réservations à venir ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">Réservations à venir</h2>
-            <Link href="/recherche" className="text-sm font-medium text-[#1D9E75] hover:underline">
-              + Trouver une table
-            </Link>
+            <Link href="/recherche" className="text-sm font-medium text-[#1D9E75] hover:underline">+ Trouver une table</Link>
           </div>
 
           {upcoming.length === 0 ? (
             <div className="px-6 py-10 text-center">
               <p className="text-gray-400 text-sm mb-3">Aucune réservation à venir.</p>
-              <Link
-                href="/recherche"
-                className="inline-block bg-[#1D9E75] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors"
-              >
+              <Link href="/recherche" className="inline-block bg-[#1D9E75] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors">
                 Trouver une table →
               </Link>
             </div>
           ) : (
             <>
               <div className="px-6 py-3 bg-[#1D9E75]/5 border-b border-[#1D9E75]/10">
-                <p className="text-xs text-[#1D9E75] font-medium">
-                  ✅ Annulation possible sans frais jusqu&apos;à 20 min avant votre repas
-                </p>
+                <p className="text-xs text-[#1D9E75] font-medium">✅ Annulation possible sans frais jusqu&apos;à 20 min avant votre repas</p>
               </div>
               <div className="divide-y divide-gray-50">
                 {upcoming.map((r) => {
-                  const deadline =
-                    r.annulationDeadline ??
-                    new Date(r.creneau.getTime() - 20 * 60 * 1000);
+                  const deadline = r.annulationDeadline ?? new Date(r.creneau.getTime() - 20 * 60 * 1000);
                   const isLate = now >= deadline;
-                  const hasCompanion = companionCounts[r.id] > 0;
-                  const companion = companionProfiles[r.id] ?? null;
+                  const companion = companionMap[r.id] ?? null;
+                  const hasCompanion = companion !== null;
 
                   return (
                     <div key={r.id} className="px-6 py-4">
@@ -247,11 +176,7 @@ export default async function MonComptePage() {
                               {deadline.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}
                             </p>
                           )}
-                          {isLate && (
-                            <p className="text-xs text-orange-500 mt-1 font-medium">
-                              ⚠️ Annulation tardive — 1€ de frais
-                            </p>
-                          )}
+                          {isLate && <p className="text-xs text-orange-500 mt-1 font-medium">⚠️ Annulation tardive — 1€ de frais</p>}
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
                           <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUT_LABEL[r.statut].color}`}>
@@ -261,11 +186,11 @@ export default async function MonComptePage() {
                         </div>
                       </div>
 
-                      {/* Match animation + révélation convive */}
-                      <CompanionReveal
+                      {/* Animation match + révélation convive */}
+                      <CompanionCard
                         hasCompanion={hasCompanion}
-                        creneau={r.creneau.toISOString()}
                         companion={companion}
+                        creneau={r.creneau.toISOString()}
                       />
                     </div>
                   );
@@ -275,7 +200,7 @@ export default async function MonComptePage() {
           )}
         </div>
 
-        {/* Réservations passées */}
+        {/* ── Historique ── */}
         {past.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-50">
@@ -297,7 +222,6 @@ export default async function MonComptePage() {
           </div>
         )}
 
-        {/* Footer légal */}
         <div className="flex items-center gap-4 text-xs text-gray-400 pt-2">
           <a href="/cgu" className="hover:text-gray-600 underline">CGU</a>
           <a href="/confidentialite" className="hover:text-gray-600 underline">Confidentialité</a>
