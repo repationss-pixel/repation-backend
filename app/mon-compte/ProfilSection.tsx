@@ -18,7 +18,8 @@ interface Props {
 }
 
 export default function ProfilSection({ user }: Props) {
-  const [open, setOpen] = useState(false)
+  console.log("ProfilSection rendu")
+  const [open, setOpen] = useState(true)
   const [photoUrl, setPhotoUrl] = useState(user.photoUrl)
   const [age, setAge] = useState(user.age ? String(user.age) : '')
   const [profession, setProfession] = useState(user.profession ?? '')
