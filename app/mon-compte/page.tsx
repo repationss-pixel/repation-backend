@@ -50,6 +50,21 @@ export default async function MonComptePage() {
     userId = parsed.userId;
   } catch { redirect("/connexion"); }
 
+  const logoutHeader = (
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/"><img src="/logo-repation.png" alt="Repation" style={{ height: "32px", width: "auto" }} /></Link>
+          <span className="text-gray-300">|</span>
+          <span className="text-sm font-semibold text-gray-700">Mon compte</span>
+        </div>
+        <form action="/api/auth/logout" method="POST">
+          <button type="submit" className="text-sm font-semibold bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition-colors">Se déconnecter</button>
+        </form>
+      </div>
+    </header>
+  );
+
   type UserData = {
     id: string; prenom: string; email: string; phone: string | null;
     photoUrl: string | null; age: number | null; profession: string | null; bio: string | null; interets: string | null;
@@ -58,14 +73,30 @@ export default async function MonComptePage() {
   let upcoming: ReservationAvecRestaurant[] = [];
   let past: ReservationAvecRestaurant[] = [];
   const companionMap: Record<string, CompanionData | null> = {};
+  let loadError = false;
 
   try {
-    const now = new Date();
-    [user, upcoming, past] = await Promise.all([
-      prisma.user.findUnique({
+    // Champs de base — toujours disponibles
+    const baseUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, prenom: true, email: true, phone: true },
+    });
+    if (!baseUser) redirect("/connexion");
+
+    // Champs profil — peuvent manquer si la migration n'a pas encore été appliquée
+    let profileFields = { photoUrl: null as string | null, age: null as number | null, profession: null as string | null, bio: null as string | null, interets: null as string | null };
+    try {
+      const profile = await prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, prenom: true, email: true, phone: true, photoUrl: true, age: true, profession: true, bio: true, interets: true },
-      }),
+        select: { photoUrl: true, age: true, profession: true, bio: true, interets: true },
+      });
+      if (profile) profileFields = profile;
+    } catch { /* colonnes pas encore en base — on continue avec les valeurs par défaut */ }
+
+    user = { ...baseUser, ...profileFields };
+
+    const now = new Date();
+    [upcoming, past] = await Promise.all([
       prisma.reservation.findMany({
         where: { userId, creneau: { gte: now }, statut: { in: [ReservationStatut.EN_ATTENTE, ReservationStatut.CONFIRMEE] } },
         include: { restaurant: { select: { nom: true, adresse: true, slug: true } } },
@@ -102,35 +133,28 @@ export default async function MonComptePage() {
       upcoming.forEach((r, i) => { companionMap[r.id] = companions[i]?.user ?? null; });
     }
   } catch {
+    loadError = true;
+  }
+
+  if (loadError || !user) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Impossible de charger votre compte. Veuillez réessayer.</p>
-          <Link href="/" className="text-[#1D9E75] hover:underline text-sm">← Retour à l'accueil</Link>
+      <div className="min-h-screen bg-[#F8F9FA]">
+        {logoutHeader}
+        <div className="flex items-center justify-center px-4 py-20">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Impossible de charger votre compte. Veuillez réessayer.</p>
+            <Link href="/" className="text-[#1D9E75] hover:underline text-sm">← Retour à l'accueil</Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!user) redirect("/connexion");
-
   const now = new Date();
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/"><img src="/logo-repation.png" alt="Repation" style={{ height: "32px", width: "auto" }} /></Link>
-            <span className="text-gray-300">|</span>
-            <span className="text-sm font-semibold text-gray-700">Mon compte</span>
-          </div>
-          <form action="/api/auth/logout" method="POST">
-            <button type="submit" className="text-sm font-semibold bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition-colors">Se déconnecter</button>
-          </form>
-        </div>
-      </header>
+      {logoutHeader}
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
 
