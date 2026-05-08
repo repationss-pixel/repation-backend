@@ -72,12 +72,22 @@ export default function Home() {
           </div>
           <nav className="flex items-center gap-3">
             {accountLabel ? (
-              <a
-                href={accountHref}
-                className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
-              >
-                Mon compte
-              </a>
+              <>
+                {sessionType === "PARTICULIER" && (
+                  <a
+                    href="/mon-profil"
+                    className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+                  >
+                    Mon profil
+                  </a>
+                )}
+                <a
+                  href={accountHref}
+                  className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
+                >
+                  Mon compte
+                </a>
+              </>
             ) : (
               <>
                 <a
