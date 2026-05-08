@@ -12,9 +12,17 @@ export default function Header() {
   const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(setSession)
+    fetch('/api/auth/me', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then((data: Session) => setSession(data))
       .catch(() => setSession({ loggedIn: false, prenom: null, type: null }))
   }, [])
 
@@ -30,7 +38,6 @@ export default function Header() {
         </div>
         <nav className="flex items-center gap-3">
           {session === null ? (
-            // Chargement silencieux — aucun flash
             <div className="h-10 w-32 rounded-xl bg-gray-100 animate-pulse" />
           ) : session.loggedIn ? (
             <>
@@ -46,7 +53,7 @@ export default function Header() {
                 href={accountHref}
                 className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
               >
-                {session.prenom ? session.prenom : 'Mon compte'}
+                {session.prenom ?? 'Mon compte'}
               </a>
             </>
           ) : (

@@ -5,7 +5,13 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const raw = cookies().get('repation_session')?.value
-  if (!raw) return NextResponse.json({ loggedIn: false })
+
+  const headers = {
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    'Pragma': 'no-cache',
+  }
+
+  if (!raw) return NextResponse.json({ loggedIn: false }, { headers })
 
   try {
     const parsed = JSON.parse(raw)
@@ -13,8 +19,8 @@ export async function GET() {
       loggedIn: true,
       prenom: parsed.prenom ?? null,
       type: parsed.type ?? null,
-    })
+    }, { headers })
   } catch {
-    return NextResponse.json({ loggedIn: false })
+    return NextResponse.json({ loggedIn: false }, { headers })
   }
 }

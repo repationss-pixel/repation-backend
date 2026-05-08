@@ -178,9 +178,15 @@ export default async function MonComptePage() {
               href="/mon-profil"
               className="ml-auto text-xs font-medium text-[#1D9E75] border border-[#1D9E75]/30 px-3 py-1.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
             >
-              Modifier le profil
+              Modifier
             </Link>
           </div>
+          <Link
+            href="/mon-profil"
+            className="flex items-center justify-center gap-2 w-full bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold py-3 rounded-xl transition-colors text-sm mb-4"
+          >
+            ✏️ Modifier mon profil →
+          </Link>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="bg-gray-50 rounded-xl px-4 py-3">
               <p className="text-xs text-gray-400 mb-0.5">Email</p>

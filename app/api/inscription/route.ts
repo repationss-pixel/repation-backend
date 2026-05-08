@@ -162,10 +162,19 @@ export async function POST(req: NextRequest) {
       ).catch((err) => console.error("[inscription] welcome email failed:", err));
     }
 
-    return NextResponse.json(
+    const sessionValue = JSON.stringify({ userId: user.id, type: user.type, prenom: user.prenom });
+    const res = NextResponse.json(
       { message: "Inscription enregistrée avec succès.", user, restaurantId },
       { status: 201 }
     );
+    res.cookies.set('repation_session', sessionValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/',
+    });
+    return res;
   } catch (err: unknown) {
     if (
       typeof err === "object" &&
