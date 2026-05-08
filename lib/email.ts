@@ -102,6 +102,14 @@ export async function sendConfirmationEmail(
          🤝 Votre convive vous rejoindra à la même table.
        </p>
      </div>
+     <div style="background:#FFF3CD;border:2px solid #F59E0B;border-radius:8px;padding:16px;margin-bottom:20px;text-align:center;">
+       <p style="margin:0;font-size:16px;font-weight:800;color:#92400E;">
+         ⚠️ N'OUBLIEZ PAS DE SCANNER LE QR CODE À VOTRE ARRIVÉE AU RESTAURANT
+       </p>
+       <p style="margin:8px 0 0;font-size:13px;color:#92400E;">
+         Sans scan, votre réservation ne sera pas validée et 1€ vous sera automatiquement débité.
+       </p>
+     </div>
      <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 16px;margin-bottom:28px;">
        <p style="margin:0;font-size:13px;color:#854d0e;line-height:1.5;">
          ⚠️ <strong>Annulation gratuite</strong> jusqu'à 20 minutes avant votre réservation.
