@@ -127,7 +127,7 @@ export default async function MonComptePage() {
             <span className="text-sm font-semibold text-gray-700">Mon compte</span>
           </div>
           <form action="/api/auth/logout" method="POST">
-            <button type="submit" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">Déconnexion</button>
+            <button type="submit" className="text-sm font-semibold bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition-colors">Se déconnecter</button>
           </form>
         </div>
       </header>
