@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { UserType, RestaurantCategorie } from "@prisma/client";
 import { sendWelcomeRestaurantEmail, sendWelcomeConviveEmail } from "@/lib/email";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 
 interface InscriptionBody {
   prenom: string;
@@ -106,14 +106,14 @@ export async function POST(req: NextRequest) {
         ? {
             prenom: prenom.trim(),
             email: email.trim().toLowerCase(),
-            passwordHash: await bcrypt.hash(password!, 10),
+            passwordHash: hashPassword(password!),
             phone: phoneNormalized,
             type: userType,
           }
         : {
             prenom: prenom.trim(),
             email: email.trim().toLowerCase(),
-            passwordHash: await bcrypt.hash(password!, 10),
+            passwordHash: hashPassword(password!),
             phone: normalizePhone(phone!),
             type: userType,
           };

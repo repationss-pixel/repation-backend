@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+import { verifyPassword } from '@/lib/password'
 
 const COOKIE = 'repation_session'
 const MAX_AGE = 60 * 60 * 24 * 30 // 30 jours
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     select: { id: true, prenom: true, type: true, passwordHash: true },
   })
 
-  if (!user || !user.passwordHash || !await bcrypt.compare(password, user.passwordHash)) {
+  if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
     return NextResponse.json({ error: 'Identifiants incorrects.' }, { status: 401 })
   }
 
