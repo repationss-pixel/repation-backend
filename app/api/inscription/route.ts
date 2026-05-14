@@ -49,6 +49,7 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  console.log("[POST /api/inscription] Requête reçue")
   let body: InscriptionBody;
 
   try {
