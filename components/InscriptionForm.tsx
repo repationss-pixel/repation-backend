@@ -68,6 +68,7 @@ export default function InscriptionForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [adresseInput, setAdresseInput] = useState('');
   const [suggestions, setSuggestions] = useState<Array<{display_name: string, lat: string, lon: string}>>([]);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
@@ -108,14 +109,25 @@ export default function InscriptionForm() {
 
   async function searchAdresse(query: string) {
     setAdresseInput(query)
+    setFormData(prev => ({ ...prev, adresse: '', latitude: 0, longitude: 0 }))
     if (query.length < 3) { setSuggestions([]); return }
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=fr&limit=5`, {
-        headers: { 'User-Agent': 'Repation/1.0' }
-      })
-      const data = await res.json()
-      setSuggestions(data)
-    } catch { setSuggestions([]) }
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=fr&limit=5&addressdetails=1`,
+          { headers: { 'Accept-Language': 'fr', 'User-Agent': 'Repation App contact@repation.fr' } }
+        )
+        if (!res.ok) return
+        const data = await res.json()
+        setSuggestions(Array.isArray(data) ? data : [])
+      } catch (e) {
+        console.error('Nominatim error:', e)
+        setSuggestions([])
+      }
+    }, 600)
   }
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
