@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { UserType, RestaurantCategorie } from "@prisma/client";
 import { sendWelcomeRestaurantEmail, sendWelcomeConviveEmail } from "@/lib/email";
-import { hashPassword } from "@/lib/password";
+import bcrypt from "bcryptjs";
 
 interface InscriptionBody {
   prenom: string;
@@ -49,7 +49,6 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  console.log("[POST /api/inscription] Requête reçue")
   let body: InscriptionBody;
 
   try {
@@ -106,14 +105,14 @@ export async function POST(req: NextRequest) {
         ? {
             prenom: prenom.trim(),
             email: email.trim().toLowerCase(),
-            passwordHash: hashPassword(password!),
+            passwordHash: await bcrypt.hash(password!, 10),
             phone: phoneNormalized,
             type: userType,
           }
         : {
             prenom: prenom.trim(),
             email: email.trim().toLowerCase(),
-            passwordHash: hashPassword(password!),
+            passwordHash: await bcrypt.hash(password!, 10),
             phone: normalizePhone(phone!),
             type: userType,
           };
@@ -128,10 +127,9 @@ export async function POST(req: NextRequest) {
     if (userType === UserType.PARTICULIER) {
       try {
         await sendWelcomeConviveEmail(user.email, user.prenom);
-        console.log("[inscription] email bienvenue envoyé à", user.email);
-      } catch (emailErr) {
-        console.error("[inscription] email bienvenue échoué:", emailErr);
-        // On continue même si l'email échoue
+        console.log("[inscription] welcome convive envoyé à", user.email);
+      } catch (err) {
+        console.error("[inscription] welcome convive ERREUR:", JSON.stringify(err));
       }
     }
 
@@ -157,17 +155,11 @@ export async function POST(req: NextRequest) {
       });
       restaurantId = restaurant.id;
 
-      try {
-        await sendWelcomeRestaurantEmail(
-          email.trim().toLowerCase(),
-          prenom.trim(),
-          restaurant.slug
-        );
-        console.log("[inscription] email bienvenue restaurateur envoyé à", email);
-      } catch (emailErr) {
-        console.error("[inscription] email bienvenue échoué:", emailErr);
-        // On continue même si l'email échoue
-      }
+      sendWelcomeRestaurantEmail(
+        email.trim().toLowerCase(),
+        prenom.trim(),
+        restaurant.slug
+      ).catch((err) => console.error("[inscription] welcome email failed:", err));
     }
 
     const sessionValue = JSON.stringify({ userId: user.id, type: user.type, prenom: user.prenom });
@@ -205,7 +197,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.error("[POST /api/inscription] ERREUR COMPLETE:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    console.error("[POST /api/inscription]", err);
     return NextResponse.json({ error: "Erreur interne. Veuillez réessayer." }, { status: 500 });
   }
 }

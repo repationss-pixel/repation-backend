@@ -3,6 +3,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  transpilePackages: ['leaflet'],
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
   },

@@ -8,8 +8,7 @@
       "Bash(npm install *)",
       "Bash(sudo npm *)",
       "Bash(npm list *)",
-      "Bash(grep -v \"^.*{$\")",
-      "Bash(npm uninstall *)"
+      "Bash(grep -v \"^.*{$\")"
     ]
   }
 }

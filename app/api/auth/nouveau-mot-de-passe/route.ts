@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { hashPassword } from '@/lib/password'
+import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
   let body: { token?: string; password?: string }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ce lien a expiré. Veuillez en demander un nouveau.' }, { status: 400 })
   }
 
-  const passwordHash = hashPassword(password)
+  const passwordHash = await bcrypt.hash(password, 10)
 
   await prisma.user.update({
     where: { id: user.id },
