@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.error("[POST /api/inscription]", err);
+    console.error("[POST /api/inscription] ERREUR COMPLETE:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
     return NextResponse.json({ error: "Erreur interne. Veuillez réessayer." }, { status: 500 });
   }
 }
