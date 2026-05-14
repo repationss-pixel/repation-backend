@@ -23,7 +23,10 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer())
 
     const { error } = await supabase.storage.from(BUCKET).upload(filename, buffer, { contentType: file.type })
-    if (error) return NextResponse.json({ error: "Erreur upload." }, { status: 500 })
+    if (error) {
+      console.error('[upload profil-photo] Supabase error:', JSON.stringify(error))
+      return NextResponse.json({ error: error.message ?? "Erreur upload." }, { status: 500 })
+    }
 
     const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(filename)
     return NextResponse.json({ url: publicUrl })
