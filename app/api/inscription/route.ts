@@ -128,9 +128,10 @@ export async function POST(req: NextRequest) {
     if (userType === UserType.PARTICULIER) {
       try {
         await sendWelcomeConviveEmail(user.email, user.prenom);
-        console.log("[inscription] welcome convive envoyé à", user.email);
-      } catch (err) {
-        console.error("[inscription] welcome convive ERREUR:", JSON.stringify(err));
+        console.log("[inscription] email bienvenue envoyé à", user.email);
+      } catch (emailErr) {
+        console.error("[inscription] email bienvenue échoué:", emailErr);
+        // On continue même si l'email échoue
       }
     }
 
@@ -156,11 +157,17 @@ export async function POST(req: NextRequest) {
       });
       restaurantId = restaurant.id;
 
-      sendWelcomeRestaurantEmail(
-        email.trim().toLowerCase(),
-        prenom.trim(),
-        restaurant.slug
-      ).catch((err) => console.error("[inscription] welcome email failed:", err));
+      try {
+        await sendWelcomeRestaurantEmail(
+          email.trim().toLowerCase(),
+          prenom.trim(),
+          restaurant.slug
+        );
+        console.log("[inscription] email bienvenue restaurateur envoyé à", email);
+      } catch (emailErr) {
+        console.error("[inscription] email bienvenue échoué:", emailErr);
+        // On continue même si l'email échoue
+      }
     }
 
     const sessionValue = JSON.stringify({ userId: user.id, type: user.type, prenom: user.prenom });
