@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import AddressAutocomplete from "./AddressAutocomplete";
 
 const RestaurantCardSetup = dynamic(() => import("./RestaurantCardSetup"), { ssr: false });
 
@@ -67,6 +66,8 @@ export default function InscriptionForm() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [adresseInput, setAdresseInput] = useState('');
+  const [suggestions, setSuggestions] = useState<Array<{display_name: string, lat: string, lon: string}>>([]);
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
@@ -103,6 +104,18 @@ export default function InscriptionForm() {
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  }
+
+  async function searchAdresse(query: string) {
+    setAdresseInput(query)
+    if (query.length < 3) { setSuggestions([]); return }
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=fr&limit=5`, {
+        headers: { 'User-Agent': 'Repation/1.0' }
+      })
+      const data = await res.json()
+      setSuggestions(data)
+    } catch { setSuggestions([]) }
   }
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -332,11 +345,34 @@ export default function InscriptionForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Adresse de votre établissement <span className="text-[#1D9E75]">*</span>
             </label>
-            <AddressAutocomplete
-              onPlaceSelected={({ address, lat, lng }) => { setFormData((d) => ({ ...d, adresse: address, latitude: lat, longitude: lng })); setErrors((er) => ({ ...er, adresse: undefined })); }}
-              className={`input-field ${errors.adresse ? "border-red-400 focus:ring-red-400" : ""}`}
-              placeholder="Ex : Le Bistrot Parisien, 12 rue de Rivoli, Paris"
-            />
+            <div style={{position:'relative'}}>
+              <input
+                type="text"
+                value={adresseInput}
+                onChange={e => searchAdresse(e.target.value)}
+                placeholder="Tapez votre adresse..."
+                className={`w-full px-4 py-3 border border-gray-200 rounded-xl ${errors.adresse ? "border-red-400" : ""}`}
+                required
+              />
+              {suggestions.length > 0 && (
+                <ul style={{position:'absolute',top:'100%',left:0,right:0,background:'white',border:'1px solid #E5E7EB',borderRadius:'8px',zIndex:100,listStyle:'none',margin:0,padding:0,boxShadow:'0 4px 12px rgba(0,0,0,0.1)'}}>
+                  {suggestions.map((s, i) => (
+                    <li key={i}
+                      onClick={() => {
+                        setAdresseInput(s.display_name)
+                        setFormData(prev => ({...prev, adresse: s.display_name, latitude: parseFloat(s.lat), longitude: parseFloat(s.lon)}))
+                        setErrors(er => ({...er, adresse: undefined}))
+                        setSuggestions([])
+                      }}
+                      style={{padding:'10px 14px',cursor:'pointer',fontSize:'13px',borderBottom:'1px solid #F3F4F6'}}
+                      onMouseEnter={e => e.currentTarget.style.background='#E1F5EE'}
+                      onMouseLeave={e => e.currentTarget.style.background='white'}>
+                      {s.display_name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             {errors.adresse ? (
               <p className="text-red-500 text-xs mt-1">{errors.adresse}</p>
             ) : (
