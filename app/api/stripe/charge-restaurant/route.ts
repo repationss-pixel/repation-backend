@@ -42,10 +42,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { montantHT, montantTTC, tarifParClient } = calculateInvoice(
-    restaurant.categorie,
-    visitesCertifiees
-  )
+  const { montantHT, montantTTC, tarifParClient } = calculateInvoice(visitesCertifiees)
 
   const amountCents = Math.round(montantTTC * 100)
 
