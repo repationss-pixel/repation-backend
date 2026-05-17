@@ -23,9 +23,9 @@ export interface CompanionData {
 export const dynamic = "force-dynamic";
 
 const STATUT_LABEL: Record<ReservationStatut, { label: string; color: string }> = {
-  EN_ATTENTE: { label: "En attente",            color: "bg-yellow-50 text-yellow-700" },
+  EN_ATTENTE: { label: "En attente",            color: "bg-[#FBF5E6] text-[#8B5E3C]" },
   CONFIRMEE:  { label: "Confirmée",             color: "bg-blue-50 text-blue-700" },
-  VALIDEE:    { label: "Présence confirmée ✓",  color: "bg-green-50 text-green-700" },
+  VALIDEE:    { label: "Présence confirmée ✓",  color: "bg-[#F2EAD9] text-[#6B3D14]" },
   ANNULEE:    { label: "Annulée",               color: "bg-gray-100 text-gray-500" },
   NO_SHOW:    { label: "Absence non justifiée", color: "bg-red-50 text-red-600" },
   TERMINEE:   { label: "Terminée",              color: "bg-gray-50 text-gray-500" },
@@ -103,10 +103,10 @@ export default async function MonComptePage() {
     }
   } catch {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F2EAD9" }}>
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Impossible de charger votre compte. Veuillez réessayer.</p>
-          <Link href="/" className="text-[#1D9E75] hover:underline text-sm">← Retour à l'accueil</Link>
+          <p className="text-sm mb-4" style={{ color: "#7A6A55" }}>Impossible de charger votre compte. Veuillez réessayer.</p>
+          <Link href="/" style={{ color: "#8B5E3C", fontSize: "13px" }}>← Retour à l&apos;accueil</Link>
         </div>
       </div>
     );
@@ -117,66 +117,108 @@ export default async function MonComptePage() {
   const now = new Date();
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen" style={{ background: "#F2EAD9" }}>
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <header style={{
+        background: "#FBF5E6",
+        borderBottom: "1px solid #D4BFA0",
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+      }}>
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/"><img src="/logo-repation.png" alt="Repation" style={{ height: "32px", width: "auto" }} /></Link>
-            <span className="text-gray-300">|</span>
-            <span className="text-sm font-semibold text-gray-700">Mon compte</span>
+            <span style={{ color: "#D4BFA0" }}>|</span>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#1C1009" }}>Mon compte</span>
           </div>
           <form action="/api/auth/logout" method="POST">
-            <button type="submit" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">Déconnexion</button>
+            <button type="submit" style={{
+              fontSize: "13px",
+              fontWeight: 600,
+              background: "#2C1A0A",
+              color: "#F2EAD9",
+              border: "none",
+              borderRadius: "8px",
+              padding: "7px 16px",
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}>
+              Déconnexion
+            </button>
           </form>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
 
-        {/* ── Section Profil (formulaire inline) ── */}
+        {/* ── Section Profil ── */}
         <ProfilSection user={user} />
 
         {/* ── Réservations à venir ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Réservations à venir</h2>
-            <Link href="/recherche" className="text-sm font-medium text-[#1D9E75] hover:underline">+ Trouver une table</Link>
+        <div style={{ background: "#FBF5E6", borderRadius: "16px", border: "1px solid #D4BFA0", overflow: "hidden" }}>
+          <div style={{ padding: "20px 24px", borderBottom: "1px solid #D4BFA0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h2 style={{
+              fontSize: "16px",
+              fontWeight: 700,
+              color: "#1C1009",
+              fontFamily: '"Playfair Display", Georgia, serif',
+            }}>
+              Réservations à venir
+            </h2>
+            <Link href="/recherche" style={{ fontSize: "13px", fontWeight: 600, color: "#8B5E3C", textDecoration: "none" }}>
+              + Trouver une table
+            </Link>
           </div>
 
           {upcoming.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <p className="text-gray-400 text-sm mb-3">Aucune réservation à venir.</p>
-              <Link href="/recherche" className="inline-block bg-[#1D9E75] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors">
+            <div style={{ padding: "40px 24px", textAlign: "center" }}>
+              <p style={{ color: "#B0A090", fontSize: "13px", marginBottom: "12px" }}>Aucune réservation à venir.</p>
+              <Link href="/recherche" style={{
+                display: "inline-block",
+                background: "#8B5E3C",
+                color: "#F2EAD9",
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "10px 20px",
+                borderRadius: "10px",
+                textDecoration: "none",
+              }}>
                 Trouver une table →
               </Link>
             </div>
           ) : (
             <>
-              <div className="px-6 py-3 bg-[#1D9E75]/5 border-b border-[#1D9E75]/10">
-                <p className="text-xs text-[#1D9E75] font-medium">✅ Annulation possible sans frais jusqu&apos;à 20 min avant votre repas</p>
+              <div style={{ padding: "10px 24px", background: "#F2EAD9", borderBottom: "1px solid #D4BFA0" }}>
+                <p style={{ fontSize: "12px", color: "#8B5E3C", fontWeight: 500 }}>
+                  ✅ Annulation possible sans frais jusqu&apos;à 20 min avant votre repas
+                </p>
               </div>
-              <div className="divide-y divide-gray-50">
-                {upcoming.map((r) => {
+              <div>
+                {upcoming.map((r, idx) => {
                   const deadline = r.annulationDeadline ?? new Date(r.creneau.getTime() - 20 * 60 * 1000);
                   const isLate = now >= deadline;
                   const companion = companionMap[r.id] ?? null;
                   const hasCompanion = companion !== null;
 
                   return (
-                    <div key={r.id} className="px-6 py-4">
+                    <div key={r.id} style={{
+                      padding: "16px 24px",
+                      borderTop: idx > 0 ? "1px solid #EDE3CF" : "none",
+                    }}>
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-800">{r.restaurant.nom}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{fmtSlot(r.creneau)}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 truncate">{r.restaurant.adresse}</p>
+                          <p style={{ fontSize: "14px", fontWeight: 600, color: "#1C1009" }}>{r.restaurant.nom}</p>
+                          <p style={{ fontSize: "12px", color: "#7A6A55", marginTop: "2px" }}>{fmtSlot(r.creneau)}</p>
+                          <p style={{ fontSize: "12px", color: "#B0A090", marginTop: "2px" }} className="truncate">{r.restaurant.adresse}</p>
                           {!isLate && (
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p style={{ fontSize: "12px", color: "#B0A090", marginTop: "4px" }}>
                               Annulation gratuite avant{" "}
                               {deadline.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}
                             </p>
                           )}
-                          {isLate && <p className="text-xs text-orange-500 mt-1 font-medium">⚠️ Annulation tardive — 1€ de frais</p>}
+                          {isLate && <p style={{ fontSize: "12px", color: "#B45309", marginTop: "4px", fontWeight: 500 }}>⚠️ Annulation tardive — 1€ de frais</p>}
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
                           <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUT_LABEL[r.statut].color}`}>
@@ -186,7 +228,6 @@ export default async function MonComptePage() {
                         </div>
                       </div>
 
-                      {/* Animation match + révélation convive */}
                       <CompanionCard
                         hasCompanion={hasCompanion}
                         companion={companion}
@@ -202,16 +243,30 @@ export default async function MonComptePage() {
 
         {/* ── Historique ── */}
         {past.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-50">
-              <h2 className="text-lg font-bold text-gray-900">Historique</h2>
+          <div style={{ background: "#FBF5E6", borderRadius: "16px", border: "1px solid #D4BFA0", overflow: "hidden" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #D4BFA0" }}>
+              <h2 style={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "#1C1009",
+                fontFamily: '"Playfair Display", Georgia, serif',
+              }}>
+                Historique
+              </h2>
             </div>
-            <div className="divide-y divide-gray-50">
-              {past.map((r) => (
-                <div key={r.id} className="px-6 py-4 flex items-start justify-between gap-4">
+            <div>
+              {past.map((r, idx) => (
+                <div key={r.id} style={{
+                  padding: "14px 24px",
+                  borderTop: idx > 0 ? "1px solid #EDE3CF" : "none",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: "16px",
+                }}>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800">{r.restaurant.nom}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{fmtSlot(r.creneau)}</p>
+                    <p style={{ fontSize: "14px", fontWeight: 600, color: "#1C1009" }}>{r.restaurant.nom}</p>
+                    <p style={{ fontSize: "12px", color: "#7A6A55", marginTop: "2px" }}>{fmtSlot(r.creneau)}</p>
                   </div>
                   <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${STATUT_LABEL[r.statut].color}`}>
                     {STATUT_LABEL[r.statut].label}
@@ -222,9 +277,9 @@ export default async function MonComptePage() {
           </div>
         )}
 
-        <div className="flex items-center gap-4 text-xs text-gray-400 pt-2">
-          <a href="/cgu" className="hover:text-gray-600 underline">CGU</a>
-          <a href="/confidentialite" className="hover:text-gray-600 underline">Confidentialité</a>
+        <div style={{ display: "flex", gap: "16px", paddingTop: "8px" }}>
+          <a href="/cgu" style={{ fontSize: "12px", color: "#B0A090", textDecoration: "underline" }}>CGU</a>
+          <a href="/confidentialite" style={{ fontSize: "12px", color: "#B0A090", textDecoration: "underline" }}>Confidentialité</a>
         </div>
 
       </main>
