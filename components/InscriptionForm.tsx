@@ -248,7 +248,7 @@ export default function InscriptionForm() {
         {(["particulier", "restaurateur"] as UserType[]).map((t) => (
           <button key={t} type="button"
             onClick={() => { setFormData((d) => ({ ...d, type: t })); setErrors({}); setPhotoPreview(null); setPhotoError(""); }}
-            className={`flex-1 py-3 text-sm font-semibold transition-all duration-200 ${formData.type === t ? "bg-[#1D9E75] text-white shadow-inner" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+            className={`flex-1 py-3 text-sm font-semibold transition-all duration-200 ${formData.type === t ? "bg-[#8B5E3C] text-white shadow-inner" : "bg-white text-gray-500 hover:bg-gray-50"}`}
           >
             {t === "particulier" ? "👤 Je suis un convive" : "🍴 Je suis restaurateur"}
           </button>
