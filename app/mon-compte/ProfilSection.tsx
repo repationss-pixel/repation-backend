@@ -80,7 +80,7 @@ export default function ProfilSection({ user }: Props) {
       <div className="p-6">
         <div className="flex items-center gap-4">
           <div
-            className="w-14 h-14 rounded-full overflow-hidden bg-[#1D9E75]/10 flex items-center justify-center text-[#1D9E75] font-bold text-xl cursor-pointer shrink-0"
+            className="w-14 h-14 rounded-full overflow-hidden bg-[#F2EAD9] flex items-center justify-center text-[#8B5E3C] font-bold text-xl cursor-pointer shrink-0"
             onClick={() => open && fileRef.current?.click()}
           >
             {photoUrl ? (
@@ -97,7 +97,7 @@ export default function ProfilSection({ user }: Props) {
           <button
             type="button"
             onClick={() => setOpen(o => !o)}
-            className="shrink-0 text-sm font-medium text-[#1D9E75] border border-[#1D9E75]/30 px-4 py-2 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+            className="shrink-0 text-sm font-medium text-[#8B5E3C] border border-[#D4BFA0] px-4 py-2 rounded-xl hover:bg-[#FBF5E6] transition-colors"
           >
             {open ? 'Fermer' : '✏️ Modifier mon profil'}
           </button>
@@ -109,7 +109,7 @@ export default function ProfilSection({ user }: Props) {
             {user.age && <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">{user.age} ans</span>}
             {user.profession && <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">{user.profession}</span>}
             {user.interets && user.interets.split(',').slice(0, 4).map(i => (
-              <span key={i} className="text-xs bg-[#1D9E75]/10 text-[#1D9E75] px-2.5 py-1 rounded-full">{i.trim()}</span>
+              <span key={i} className="text-xs bg-[#FBF5E6] text-[#8B5E3C] px-2.5 py-1 rounded-full">{i.trim()}</span>
             ))}
           </div>
         )}
@@ -118,7 +118,7 @@ export default function ProfilSection({ user }: Props) {
         )}
 
         {success && (
-          <div className="mt-3 bg-green-50 border border-green-100 rounded-xl px-4 py-2.5 text-sm text-[#1D9E75] font-medium">
+          <div className="mt-3 bg-[#F2EAD9] border border-[#D4BFA0] rounded-xl px-4 py-2.5 text-sm text-[#8B5E3C] font-medium">
             ✓ Profil enregistré !
           </div>
         )}
@@ -132,16 +132,16 @@ export default function ProfilSection({ user }: Props) {
             <p className="text-xs font-medium text-gray-500 mb-2">Photo de profil</p>
             <div className="flex items-center gap-4">
               <div
-                className="w-16 h-16 rounded-full overflow-hidden bg-[#1D9E75]/10 flex items-center justify-center cursor-pointer border-2 border-dashed border-[#1D9E75]/30 hover:border-[#1D9E75] transition-colors"
+                className="w-16 h-16 rounded-full overflow-hidden bg-[#F2EAD9] flex items-center justify-center cursor-pointer border-2 border-dashed border-[#D4BFA0] hover:border-[#8B5E3C] transition-colors"
                 onClick={() => fileRef.current?.click()}
               >
                 {photoUrl
                   ? <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-                  : <span className="text-xl font-bold text-[#1D9E75]">{user.prenom[0].toUpperCase()}</span>
+                  : <span className="text-xl font-bold text-[#8B5E3C]">{user.prenom[0].toUpperCase()}</span>
                 }
               </div>
               <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-                className="text-sm text-[#1D9E75] hover:underline disabled:opacity-50">
+                className="text-sm text-[#8B5E3C] hover:underline disabled:opacity-50">
                 {uploading ? 'Upload…' : photoUrl ? 'Changer la photo' : 'Ajouter une photo'}
               </button>
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhoto} />
@@ -154,13 +154,13 @@ export default function ProfilSection({ user }: Props) {
               <label className="block text-xs font-medium text-gray-500 mb-1.5">Âge</label>
               <input type="number" min={18} max={99} value={age} onChange={e => setAge(e.target.value)}
                 placeholder="Ex : 32"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/40 focus:border-[#1D9E75]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4A06A]/40 focus:border-[#C4A06A]" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1.5">Profession</label>
               <input type="text" value={profession} onChange={e => setProfession(e.target.value)} maxLength={60}
                 placeholder="Ex : Designer…"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/40 focus:border-[#1D9E75]" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4A06A]/40 focus:border-[#C4A06A]" />
             </div>
           </div>
 
@@ -172,7 +172,7 @@ export default function ProfilSection({ user }: Props) {
             </div>
             <textarea value={bio} onChange={e => setBio(e.target.value.slice(0, 150))} rows={2}
               placeholder="Quelques mots sur vous…"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/40 focus:border-[#1D9E75]" />
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#C4A06A]/40 focus:border-[#C4A06A]" />
           </div>
 
           {/* Centres d'intérêt */}
@@ -183,7 +183,7 @@ export default function ProfilSection({ user }: Props) {
                 const active = selectedInterets.includes(i)
                 return (
                   <button key={i} type="button" onClick={() => toggleInteret(i)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${active ? 'bg-[#1D9E75] text-white border-[#1D9E75]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#1D9E75]'}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${active ? 'bg-[#FBF5E6] text-[#8B5E3C] border-[#8B5E3C]' : 'bg-white text-[#7A6A55] border-[#D4BFA0] hover:border-[#8B5E3C]'}`}>
                     {i}
                   </button>
                 )
@@ -194,7 +194,7 @@ export default function ProfilSection({ user }: Props) {
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <button type="button" onClick={handleSave} disabled={saving || uploading}
-            className="w-full bg-[#1D9E75] hover:bg-[#178560] disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors text-sm">
+            className="w-full bg-[#2C1A0A] hover:bg-[#6B3D14] disabled:opacity-50 text-[#F2EAD9] font-semibold py-3 rounded-xl transition-colors text-sm">
             {saving ? 'Enregistrement…' : 'Enregistrer mon profil'}
           </button>
         </div>

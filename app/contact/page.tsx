@@ -61,7 +61,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#D4BFA0]">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3">

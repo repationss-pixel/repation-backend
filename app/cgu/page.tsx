@@ -4,7 +4,7 @@ export const metadata = { title: "Conditions Générales d'Utilisation — Repat
 
 export default function CGU() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       <header className="border-b border-gray-100 py-4 px-6">
         <div className="max-w-3xl mx-auto flex items-center gap-4">
           <Link href="/">
