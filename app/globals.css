@@ -2,59 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
+:root {
+  --bg-primary: #F2EAD9;
+  --bg-secondary: #EDE3CF;
+  --bg-dark: #2C1A0A;
+  --accent-gold: #C4A06A;
+  --accent-brown: #6B3D14;
+  --text-primary: #1C1009;
+  --text-secondary: #7A6A55;
+  --text-muted: #B0A090;
+  --border-color: #D4BFA0;
+
+  --background: #F2EAD9;
+  --foreground: #1C1009;
+  --primary: #6B3D14;
 }
 
-html, body {
-  background-color: #F2EAD9 !important;
-  color: #1C1009;
+body {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* Boutons principaux */
-.btn-primary {
-  background-color: #6B3D14 !important;
-  color: #F2EAD9 !important;
-  border-color: #6B3D14 !important;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
-.btn-primary:hover {
-  background-color: #2C1A0A !important;
-}
+@layer components {
+  .btn-primary {
+    @apply bg-accent-brown hover:bg-bg-dark text-cream font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg;
+  }
 
-/* Remplace toutes les classes bg-white par beige */
-.bg-white {
-  background-color: #FBF5E6 !important;
-}
-
-/* Remplace le vert principal par le brun */
-.bg-\[#1D9E75\], .bg-green-500 {
-  background-color: #6B3D14 !important;
-}
-
-.text-\[#1D9E75\] {
-  color: #C4A06A !important;
-}
-
-.border-\[#1D9E75\] {
-  border-color: #C4A06A !important;
-}
-
-/* Cards */
-.rounded-xl, .rounded-lg {
-  background-color: #FBF5E6;
-  border-color: #D4BFA0;
-}
-
-/* Inputs */
-input, textarea, select {
-  background-color: #FBF5E6 !important;
-  border-color: #D4BFA0 !important;
-  color: #1C1009 !important;
-}
-
-/* Footer */
-footer {
-  background-color: #EDE3CF !important;
-  border-color: #D4BFA0 !important;
+  .input-field {
+    @apply w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-transparent transition-all duration-200 bg-white text-text-primary placeholder-text-muted;
+  }
 }
