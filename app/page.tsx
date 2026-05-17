@@ -1,101 +1,94 @@
+import SearchPanel from "@/components/SearchPanel";
+import InscriptionForm from "@/components/InscriptionForm";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
-import { ReservationStatut } from "@prisma/client";
-import { Playfair_Display } from "next/font/google";
 
-const playfair = Playfair_Display({ subsets: ["latin"], style: ["normal", "italic"] });
+export const dynamic = 'force-dynamic'
 
-export const dynamic = "force-dynamic";
+const steps = [
+  {
+    title: "1. Je réserve",
+    description: "Je choisis un restaurant partenaire et un créneau disponible",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    ),
+  },
+  {
+    title: "2. Je rencontre",
+    description: "Repation me met en relation avec un autre convive",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87" />
+        <path d="M16 3.13a4 4 0 010 7.75" />
+      </svg>
+    ),
+  },
+  {
+    title: "3. Je partage",
+    description: "On se retrouve à table et on partage un bon repas",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4l3 3" />
+        <path d="M5 3l14 18" strokeDasharray="0" opacity="0" />
+        <path d="M8 3v3c0 2.2 1.8 4 4 4s4-1.8 4-4V3" />
+        <path d="M12 10v11" />
+      </svg>
+    ),
+  },
+];
 
-export default async function Home() {
+export default function Home() {
   let sessionPrenom: string | null = null;
   let sessionType: string | null = null;
   try {
     const raw = cookies().get("repation_session")?.value;
     if (raw) {
-      const p = JSON.parse(raw);
-      sessionPrenom = p.prenom ?? null;
-      sessionType = p.type ?? null;
+      const parsed = JSON.parse(raw);
+      sessionPrenom = parsed.prenom ?? null;
+      sessionType = parsed.type ?? null;
     }
   } catch {}
 
   const accountHref = sessionType === "RESTAURATEUR" ? "/dashboard/restaurateur" : "/mon-compte";
-
-  const now = new Date();
-  const restaurants = await prisma.restaurant.findMany({
-    take: 8,
-    orderBy: { createdAt: "desc" },
-    include: {
-      reservations: {
-        where: {
-          statut: ReservationStatut.EN_ATTENTE,
-          visitId: null,
-          creneau: { gte: now },
-        },
-        orderBy: { creneau: "asc" },
-        take: 1,
-      },
-    },
-  });
+  const accountLabel = sessionPrenom ?? null;
 
   return (
-    <div style={{ background: "#F2EAD9", minHeight: "100vh", color: "#1C1009" }}>
+    <div className="min-h-screen bg-white">
 
-      {/* ── NAVBAR ── */}
-      <header style={{
-        background: "#F2EAD9",
-        borderBottom: "1px solid #D4BFA0",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-      }}>
-        <div style={{
-          maxWidth: "1280px",
-          margin: "0 auto",
-          padding: "0 32px",
-          height: "64px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "relative",
-        }}>
-          <div style={{ width: "180px" }} />
-
-          <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
-            <img
-              src="/logo-repation.png"
-              alt="Repation"
-              style={{
-                height: "36px",
-                width: "auto",
-                filter: "brightness(0) sepia(1) saturate(0.6) hue-rotate(5deg) opacity(0.85)",
-              }}
-            />
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center">
+            <img src="/logo-repation.png" alt="Repation" style={{ height: '44px', width: 'auto', display: 'block' }} />
           </div>
-
-          <nav style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {sessionPrenom ? (
-              <a href={accountHref} style={{
-                fontSize: "13px", fontWeight: 600, color: "#6B3D14",
-                border: "1px solid #C4A06A", padding: "8px 20px", borderRadius: "8px",
-                textDecoration: "none",
-              }}>
+          <nav className="flex items-center gap-3">
+            {accountLabel ? (
+              <a
+                href={accountHref}
+                className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
+              >
                 Mon compte
               </a>
             ) : (
               <>
-                <a href="/connexion" style={{
-                  fontSize: "13px", fontWeight: 600, color: "#6B3D14",
-                  textDecoration: "none",
-                }}>
-                  Connexion
+                <a
+                  href="/inscription"
+                  className="text-sm font-semibold text-[#1D9E75] border border-[#1D9E75] px-5 py-2.5 rounded-xl hover:bg-[#1D9E75]/5 transition-colors"
+                >
+                  Inscription
                 </a>
-                <a href="/inscription" style={{
-                  fontSize: "13px", fontWeight: 600, background: "#2C1A0A",
-                  color: "#F2EAD9", padding: "8px 20px", borderRadius: "8px",
-                  textDecoration: "none",
-                }}>
-                  S&apos;inscrire
+                <a
+                  href="/connexion"
+                  className="text-sm font-semibold bg-[#1D9E75] text-white px-5 py-2.5 rounded-xl hover:bg-[#178560] transition-colors shadow-sm"
+                >
+                  Connexion
                 </a>
               </>
             )}
@@ -103,183 +96,96 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* ── HERO 2 colonnes ── */}
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: "calc(100vh - 64px)" }}>
-
-        {/* Colonne gauche — beige */}
-        <div style={{
-          background: "#F2EAD9",
-          padding: "80px 64px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}>
-          <p style={{
-            fontSize: "10px", fontWeight: 700, letterSpacing: "3.5px",
-            color: "#C4A06A", textTransform: "uppercase", marginBottom: "28px",
-          }}>
-            La table partagée
-          </p>
-
-          <h1 className={playfair.className} style={{
-            fontSize: "54px", lineHeight: 1.1, color: "#1C1009",
-            marginBottom: "24px", fontWeight: 700,
-          }}>
-            Le hasard vous met<br />
-            <em style={{ color: "#6B3D14", fontStyle: "italic" }}>à table.</em>
-          </h1>
-
-          <p style={{
-            fontSize: "15px", color: "#8C6D4A", lineHeight: 1.75,
-            marginBottom: "44px", maxWidth: "380px",
-          }}>
-            Repation vous connecte à d&apos;autres convives dans des restaurants partenaires près de chez vous.
-          </p>
-
-          {/* Barre de recherche */}
-          <div style={{ display: "flex", marginBottom: "20px", maxWidth: "440px" }}>
-            <input
-              type="text"
-              placeholder="Ville, restaurant, quartier…"
-              style={{
-                flex: 1, padding: "13px 18px", background: "white",
-                border: "1px solid #D4BFA0", borderRight: "none",
-                borderRadius: "8px 0 0 8px", fontSize: "14px", color: "#1C1009",
-                outline: "none", fontFamily: "inherit",
-              }}
-            />
-            <button style={{
-              padding: "13px 22px", background: "#2C1A0A", color: "#F2EAD9",
-              border: "none", borderRadius: "0 8px 8px 0", fontSize: "13px",
-              fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-            }}>
-              Rechercher
-            </button>
+      {/* ── Hero ── */}
+      <section className="bg-white">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="flex flex-col items-center text-center min-h-[88vh] justify-center py-16">
+            <p className="text-[#1D9E75] font-black text-3xl tracking-tight mb-8">Repation</p>
+            <h1 className="text-5xl sm:text-6xl font-extrabold leading-[1.08] mb-6 tracking-tight">
+              <span className="text-gray-900">Le hasard</span>
+              <br />
+              <span className="text-[#1D9E75]">vous met à table.</span>
+            </h1>
+            <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-xl">
+              Repation vous connecte à d&apos;autres convives dans des restaurants partenaires près de chez vous.
+            </p>
+            <div className="w-full">
+              <SearchPanel />
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Pills */}
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {["Midi", "Soir", "Brasserie", "Restaurant", "Café"].map((pill) => (
-              <span key={pill} style={{
-                padding: "6px 16px", border: "1px solid #C4A06A",
-                borderRadius: "20px", fontSize: "12px", color: "#6B3D14",
-                cursor: "pointer", userSelect: "none",
-              }}>
-                {pill}
-              </span>
+      {/* ── Comment ça marche ── */}
+      <section id="comment-ca-marche" className="py-24 px-6 bg-[#F8F9FA]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
+              Comment ça marche ?
+            </h2>
+            <p className="text-lg text-gray-500 max-w-xl mx-auto">
+              En 3 étapes simples, transformez un repas solitaire en moment de convivialité.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((step, i) => (
+              <div key={i} className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div className="w-12 h-12 bg-[#1D9E75]/10 rounded-xl flex items-center justify-center mb-5 text-[#1D9E75]">
+                  {step.icon}
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+              </div>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Colonne droite — bois sombre */}
-        <div style={{
-          background: "#2C1A0A",
-          padding: "64px 48px",
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-        }}>
-          <p style={{
-            fontSize: "10px", fontWeight: 700, letterSpacing: "3.5px",
-            color: "#C4A06A", textTransform: "uppercase", marginBottom: "32px",
-          }}>
-            Tables disponibles
-          </p>
-
-          {restaurants.length === 0 ? (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "60px" }}>
-              <p className={playfair.className} style={{
-                fontSize: "26px", color: "#C4A06A", fontStyle: "italic",
-                textAlign: "center", marginBottom: "12px",
-              }}>
-                Bientôt dans votre ville
-              </p>
-              <p style={{ fontSize: "13px", color: "#6B4A2A", textAlign: "center", maxWidth: "240px", lineHeight: 1.6 }}>
-                Les premiers restaurants partenaires arrivent prochainement.
-              </p>
+      {/* ── Inscription ── */}
+      <section id="inscription" className="py-24 px-6 bg-white">
+        <div className="max-w-lg mx-auto">
+          {accountLabel ? (
+            <div className="text-center space-y-6">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                Bon retour, <span className="text-[#1D9E75]">{accountLabel}</span>&nbsp;!
+              </h2>
+              <p className="text-lg text-gray-500">Retrouvez vos réservations et votre profil.</p>
+              <a
+                href={accountHref}
+                className="inline-block bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base shadow-sm"
+              >
+                Accéder à mon compte →
+              </a>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              {restaurants.map((r) => {
-                const slot = r.reservations[0];
-                const hasOpenSeat = !!slot;
-                const heure = slot
-                  ? new Date(slot.creneau).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-                  : null;
-                const adresseParts = r.adresse.split(",");
-                const ville = adresseParts[adresseParts.length - 1]?.trim() ?? r.adresse;
-
-                return (
-                  <div key={r.id} style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(196,160,106,0.18)",
-                    borderRadius: "12px",
-                    padding: "20px 22px",
-                  }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
-                      <div>
-                        <p style={{ fontSize: "15px", fontWeight: 600, color: "#F2EAD9", marginBottom: "4px" }}>
-                          {r.nom}
-                        </p>
-                        <p style={{ fontSize: "12px", color: "#8C6D4A" }}>
-                          {ville}{heure ? ` · ${heure}` : ""}
-                        </p>
-                      </div>
-
-                      {/* 2 ronds — place prise / place libre */}
-                      <div style={{ display: "flex", gap: "7px", alignItems: "center", paddingTop: "2px" }}>
-                        <div style={{
-                          width: "11px", height: "11px", borderRadius: "50%",
-                          background: "#C4A06A",
-                        }} />
-                        <div style={{
-                          width: "11px", height: "11px", borderRadius: "50%",
-                          background: hasOpenSeat ? "transparent" : "#C4A06A",
-                          border: hasOpenSeat ? "1.5px solid #C4A06A" : "none",
-                        }} />
-                      </div>
-                    </div>
-
-                    {hasOpenSeat && (
-                      <a href={`/restaurant/${r.slug}`} style={{
-                        display: "inline-block",
-                        fontSize: "10px", fontWeight: 700, letterSpacing: "1.5px",
-                        color: "#C4A06A", border: "1px solid #C4A06A",
-                        padding: "5px 14px", borderRadius: "6px",
-                        textTransform: "uppercase", textDecoration: "none",
-                      }}>
-                        Rejoindre la table
-                      </a>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <>
+              <div className="text-center mb-10">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+                  Rejoindre Repation
+                </h2>
+                <p className="text-lg text-gray-500">Gratuit pour tous. Restaurateurs et convives.</p>
+              </div>
+              <InscriptionForm />
+            </>
           )}
         </div>
       </section>
 
-      {/* ── BANDE DU BAS ── */}
-      <div style={{
-        background: "#EDE3CF",
-        borderTop: "1px solid #D4BFA0",
-        padding: "28px 64px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}>
-        <p className={playfair.className} style={{
-          fontSize: "19px", fontStyle: "italic", color: "#6B3D14",
-        }}>
-          Repation, le hasard vous met à table.
-        </p>
-        <a href="/inscription" style={{
-          fontSize: "14px", fontWeight: 600, color: "#2C1A0A",
-          textDecoration: "none",
-        }}>
-          Vous êtes restaurateur ?&nbsp;<span style={{ color: "#C4A06A" }}>→</span>
-        </a>
-      </div>
+      {/* ── Footer ── */}
+      <footer className="bg-white border-t border-gray-200 py-10 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-start gap-1">
+            <img src="/logo-repation.png" alt="Repation" style={{ height: '32px', width: 'auto', display: 'block' }} />
+            <p className="text-sm text-gray-400 italic">Le hasard vous met à table.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-400">© {new Date().getFullYear()} Repation. Tous droits réservés.</p>
+            <a href="/contact" className="text-sm text-gray-400 hover:text-gray-600 underline">Contact</a>
+            <a href="/cgu" className="text-sm text-gray-400 hover:text-gray-600 underline">CGU</a>
+            <a href="/confidentialite" className="text-sm text-gray-400 hover:text-gray-600 underline">Confidentialité</a>
+          </div>
+        </div>
+      </footer>
 
     </div>
   );
