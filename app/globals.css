@@ -24,6 +24,19 @@ body {
   color: #8B5E3C !important;
 }
 
+/* Textes verts → marron clair */
+[class*="text-\[#1D9E75\]"],
+[class*="text-\[#085041\]"],
+[class*="text-\[#0F6E56\]"] {
+  color: #8B5E3C !important;
+}
+
+/* Style inline verts → marron */
+[style*="color: rgb(29, 158, 117)"],
+[style*="color:#1D9E75"] {
+  color: #8B5E3C !important;
+}
+
 @layer components {
   .btn-primary {
     @apply bg-[#6B3D14] hover:bg-[#2C1A0A] text-[#F2EAD9] font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg;
