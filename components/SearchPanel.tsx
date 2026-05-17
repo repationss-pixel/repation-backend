@@ -37,7 +37,7 @@ export default function SearchPanel() {
           placeholder="Où voulez-vous manger ?"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 text-gray-800 placeholder-gray-400 bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent text-base transition-all"
+          className="w-full pl-12 pr-4 py-4 text-[#1C1009] placeholder-[#B0A090] bg-white border border-[#D4BFA0] rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C4A06A] focus:border-transparent text-base transition-all"
         />
       </div>
 
@@ -49,8 +49,8 @@ export default function SearchPanel() {
             onClick={() => setSelected(cat)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               selected === cat
-                ? "bg-[#1D9E75] text-white shadow-sm"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-[#6B3D14] text-white shadow-sm"
+                : "bg-[#EDE3CF] text-[#6B3D14] hover:bg-[#D4BFA0]"
             }`}
           >
             {cat}
@@ -60,7 +60,7 @@ export default function SearchPanel() {
 
       <a
         href="/recherche"
-        className="block w-full bg-[#1D9E75] hover:bg-[#178560] text-white font-semibold py-4 rounded-2xl shadow-md hover:shadow-lg transition-all text-base text-center"
+        className="block w-full bg-[#6B3D14] hover:bg-[#2C1A0A] text-white font-semibold py-4 rounded-2xl shadow-md hover:shadow-lg transition-all text-base text-center"
       >
         Trouver une table →
       </a>
