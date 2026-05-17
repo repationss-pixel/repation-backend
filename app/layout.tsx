@@ -8,9 +8,8 @@ export const metadata: Metadata = {
     "Repation vous connecte à d'autres convives dans des restaurants partenaires près de chez vous.",
   keywords: ["repas", "restaurant", "rencontre", "social", "convivialité"],
   icons: {
-    icon: '/logo-repation.png',
-    shortcut: '/logo-repation.png',
-    apple: '/logo-repation.png',
+    icon: [{ url: '/logo-repation.png', type: 'image/png' }],
+    apple: [{ url: '/logo-repation.png' }],
   },
   openGraph: {
     title: "Repation — Le hasard vous met à table",
