@@ -3,7 +3,7 @@ import InscriptionForm from "@/components/InscriptionForm";
 
 export default function InscriptionPage() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#F2EAD9] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -21,7 +21,7 @@ export default function InscriptionPage() {
 
         <p className="text-sm text-center text-gray-400 mt-6">
           Déjà un compte ?{" "}
-          <Link href="/connexion" className="text-[#1D9E75] hover:underline font-medium">
+          <Link href="/connexion" className="text-[#8B5E3C] hover:underline font-medium">
             Se connecter
           </Link>
         </p>

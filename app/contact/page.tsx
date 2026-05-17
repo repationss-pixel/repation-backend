@@ -39,45 +39,77 @@ export default function ContactPage() {
     }
   }
 
+  const inputStyle = {
+    width: "100%",
+    padding: "11px 14px",
+    background: "white",
+    border: "1px solid #D4BFA0",
+    borderRadius: "10px",
+    fontSize: "14px",
+    color: "#1C1009",
+    outline: "none",
+    fontFamily: "inherit",
+    boxSizing: "border-box" as const,
+  };
+
+  const labelStyle = {
+    display: "block",
+    fontSize: "13px",
+    fontWeight: 500,
+    color: "#7A6A55",
+    marginBottom: "6px",
+  };
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm">
+      <header className="sticky top-0 z-50 bg-white border-b border-[#D4BFA0]">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3">
           <Link href="/">
             <img src="/logo-repation.png" alt="Repation" style={{ height: "32px", width: "auto" }} />
           </Link>
-          <span className="text-gray-300">|</span>
-          <span className="text-sm font-semibold text-gray-700">Contact</span>
+          <span style={{ color: "#D4BFA0" }}>|</span>
+          <span className="text-sm font-semibold" style={{ color: "#1C1009" }}>Contact</span>
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-6 py-12">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Contactez-nous</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-3xl font-extrabold mb-2" style={{ color: "#1C1009" }}>Contactez-nous</h1>
+          <p className="text-sm" style={{ color: "#7A6A55" }}>
             Une question, un problème ? On vous répond sous 24h.
           </p>
         </div>
 
         {status === "success" ? (
-          <div className="bg-[#1D9E75]/5 border border-[#1D9E75]/30 rounded-2xl p-10 text-center space-y-4">
-            <div className="text-5xl">✅</div>
-            <h2 className="text-xl font-bold text-gray-900">Message envoyé !</h2>
-            <p className="text-gray-500 text-sm">
-              Merci <strong className="text-[#1D9E75]">{prenom}</strong>. Nous vous répondrons à {email} sous 24h.
+          <div style={{
+            background: "#F2EAD9",
+            border: "1px solid #D4BFA0",
+            borderRadius: "16px",
+            padding: "40px",
+            textAlign: "center",
+          }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>✅</div>
+            <h2 className="text-xl font-bold mb-2" style={{ color: "#1C1009" }}>Message envoyé !</h2>
+            <p className="text-sm mb-4" style={{ color: "#7A6A55" }}>
+              Merci <strong style={{ color: "#8B5E3C" }}>{prenom}</strong>. Nous vous répondrons à {email} sous 24h.
             </p>
-            <Link href="/" className="inline-block mt-2 text-sm text-[#1D9E75] hover:underline font-medium">
+            <Link href="/" style={{ fontSize: "13px", color: "#8B5E3C", fontWeight: 600, textDecoration: "none" }}>
               ← Retour à l&apos;accueil
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 space-y-5">
-            {/* Prénom */}
+          <form onSubmit={handleSubmit} style={{
+            background: "white",
+            border: "1px solid #D4BFA0",
+            borderRadius: "16px",
+            padding: "32px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+          }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Prénom <span className="text-[#1D9E75]">*</span>
-              </label>
+              <label style={labelStyle}>Prénom <span style={{ color: "#8B5E3C" }}>*</span></label>
               <input
                 type="text"
                 autoComplete="given-name"
@@ -85,15 +117,12 @@ export default function ContactPage() {
                 value={prenom}
                 onChange={(e) => setPrenom(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent"
+                style={inputStyle}
               />
             </div>
 
-            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email <span className="text-[#1D9E75]">*</span>
-              </label>
+              <label style={labelStyle}>Email <span style={{ color: "#8B5E3C" }}>*</span></label>
               <input
                 type="email"
                 autoComplete="email"
@@ -101,19 +130,16 @@ export default function ContactPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent"
+                style={inputStyle}
               />
             </div>
 
-            {/* Sujet */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Sujet <span className="text-[#1D9E75]">*</span>
-              </label>
+              <label style={labelStyle}>Sujet <span style={{ color: "#8B5E3C" }}>*</span></label>
               <select
                 value={sujet}
                 onChange={(e) => setSujet(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent appearance-none bg-white"
+                style={{ ...inputStyle, appearance: "none" as const }}
               >
                 {SUJETS.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -121,23 +147,27 @@ export default function ContactPage() {
               </select>
             </div>
 
-            {/* Message */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Message <span className="text-[#1D9E75]">*</span>
-              </label>
+              <label style={labelStyle}>Message <span style={{ color: "#8B5E3C" }}>*</span></label>
               <textarea
                 placeholder="Décrivez votre demande..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 required
                 rows={5}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75] focus:border-transparent resize-none"
+                style={{ ...inputStyle, resize: "none" }}
               />
             </div>
 
             {status === "error" && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+              <div style={{
+                background: "#FEF2F2",
+                border: "1px solid #FECACA",
+                borderRadius: "10px",
+                padding: "10px 14px",
+                fontSize: "13px",
+                color: "#B91C1C",
+              }}>
                 {errorMsg}
               </div>
             )}
@@ -145,7 +175,18 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={status === "loading"}
-              className="w-full bg-[#1D9E75] hover:bg-[#178560] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-colors text-sm"
+              style={{
+                width: "100%",
+                background: status === "loading" ? "#7A6A55" : "#2C1A0A",
+                color: "#F2EAD9",
+                border: "none",
+                borderRadius: "10px",
+                padding: "13px",
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: status === "loading" ? "not-allowed" : "pointer",
+                fontFamily: "inherit",
+              }}
             >
               {status === "loading" ? "Envoi en cours…" : "Envoyer →"}
             </button>
@@ -154,7 +195,7 @@ export default function ContactPage() {
       </main>
 
       <footer className="mt-12 pb-8 text-center">
-        <Link href="/" className="text-sm text-gray-400 hover:text-gray-600 underline">
+        <Link href="/" style={{ fontSize: "13px", color: "#8B5E3C", textDecoration: "underline" }}>
           ← Retour à l&apos;accueil
         </Link>
       </footer>

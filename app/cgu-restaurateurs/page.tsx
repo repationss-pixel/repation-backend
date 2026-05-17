@@ -111,7 +111,7 @@ export default function CGURestaurateurs() {
         </Section>
 
         <div className="mt-12 pt-6 border-t border-gray-100">
-          <Link href="/dashboard/restaurateur" className="text-[#1D9E75] text-sm hover:underline">
+          <Link href="/dashboard/restaurateur" className="text-[#8B5E3C] text-sm hover:underline">
             ← Retour au tableau de bord
           </Link>
         </div>

@@ -98,7 +98,7 @@ export default function Confidentialite() {
         </Section>
 
         <div className="mt-12 pt-6 border-t border-gray-100">
-          <Link href="/" className="text-[#1D9E75] text-sm hover:underline">← Retour à l'accueil</Link>
+          <Link href="/" className="text-[#8B5E3C] text-sm hover:underline">← Retour à l'accueil</Link>
         </div>
       </main>
     </div>
