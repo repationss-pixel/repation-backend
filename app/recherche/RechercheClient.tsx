@@ -26,7 +26,7 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 }
 
 export default function RechercheClient({ restaurants }: { restaurants: Restaurant[] }) {
-  const [distanceKm, setDistanceKm] = useState(30);
+  const [distanceKm, setDistanceKm] = useState(50);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
   const [geoStatus, setGeoStatus] = useState<"pending" | "ok" | "refused">("pending");
 
@@ -90,7 +90,7 @@ export default function RechercheClient({ restaurants }: { restaurants: Restaura
           <input
             type="range"
             min={1}
-            max={30}
+            max={200}
             value={distanceKm}
             onChange={(e) => setDistanceKm(Number(e.target.value))}
             disabled={geoStatus !== "ok"}
@@ -99,7 +99,7 @@ export default function RechercheClient({ restaurants }: { restaurants: Restaura
           />
           <div className="flex justify-between text-xs mt-1" style={{ color: "#B0A090" }}>
             <span>1 km</span>
-            <span>30 km</span>
+            <span>200 km</span>
           </div>
         </div>
 
