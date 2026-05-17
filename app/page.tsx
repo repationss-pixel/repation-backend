@@ -65,12 +65,12 @@ export default function Home() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between relative">
-          {/* Spacer gauche pour équilibrer */}
-          <div className="w-48" />
-
-          {/* Logo centré en absolu */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+          {/* Logo + texte à gauche */}
+          <div className="flex items-center gap-3">
             <img src="/logo-repation.png" alt="Repation" style={{ height: '40px', width: 'auto', display: 'block' }} />
+            <span style={{ color: '#8B5E3C', fontWeight: 500, fontSize: '14px', letterSpacing: '2px' }}>
+              REPATION
+            </span>
           </div>
 
           {/* Nav droite */}
