@@ -3,14 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #1D9E75;
+  --bg-primary: #F2EAD9;
+  --bg-secondary: #EDE3CF;
+  --bg-dark: #2C1A0A;
+  --accent-gold: #C4A06A;
+  --accent-brown: #6B3D14;
+  --text-primary: #1C1009;
+  --text-secondary: #7A6A55;
+  --text-muted: #B0A090;
+  --border-color: #D4BFA0;
+
+  --background: #F2EAD9;
+  --foreground: #1C1009;
+  --primary: #6B3D14;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--text-primary);
+  background: var(--bg-primary);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
@@ -22,10 +32,10 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg;
+    @apply bg-accent-brown hover:bg-bg-dark text-cream font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white text-gray-800 placeholder-gray-400;
+    @apply w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-transparent transition-all duration-200 bg-white text-text-primary placeholder-text-muted;
   }
 }
