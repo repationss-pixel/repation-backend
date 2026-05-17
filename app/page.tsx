@@ -11,7 +11,7 @@ export default async function Home() {
   let sessionPrenom: string | null = null;
   let sessionType: string | null = null;
   try {
-    const raw = (await cookies()).get("repation_session")?.value;
+    const raw = cookies().get("repation_session")?.value;
     if (raw) {
       const p = JSON.parse(raw);
       sessionPrenom = p.prenom ?? null;
@@ -387,6 +387,8 @@ export default async function Home() {
                 color: "#7A6A55",
                 textDecoration: "none",
               }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#1C1009")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#7A6A55")}
               >
                 {label}
               </a>
