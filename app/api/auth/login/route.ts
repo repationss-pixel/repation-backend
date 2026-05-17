@@ -6,7 +6,7 @@ const COOKIE = 'repation_session'
 const MAX_AGE = 60 * 60 * 24 * 30 // 30 jours
 
 export async function POST(req: NextRequest) {
-  let body: { email?: string; password?: string; type?: string }
+  let body: { email?: string; password?: string }
   try {
     body = await req.json()
   } catch {
@@ -26,8 +26,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Identifiants incorrects.' }, { status: 401 })
   }
 
+  // Redirect based on actual DB type — never trust client-side toggle
+  const redirect = user.type === 'RESTAURATEUR' ? '/dashboard/restaurateur' : '/mon-compte'
+
   const sessionValue = JSON.stringify({ userId: user.id, type: user.type, prenom: user.prenom })
-  const res = NextResponse.json({ user: { id: user.id, prenom: user.prenom, type: user.type } })
+  const res = NextResponse.json({ redirect, user: { id: user.id, prenom: user.prenom, type: user.type } })
   res.cookies.set(COOKIE, sessionValue, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

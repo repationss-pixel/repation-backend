@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 
-const categories = ["Tous", "Restaurant", "Brasserie", "Café", "Bar", "Fast-food"];
-
 export default function SearchPanel() {
-  const [selected, setSelected] = useState("Tous");
   const [query, setQuery] = useState("");
 
   return (
@@ -39,23 +36,6 @@ export default function SearchPanel() {
           onChange={(e) => setQuery(e.target.value)}
           className="w-full pl-12 pr-4 py-4 text-[#1C1009] placeholder-[#B0A090] bg-white border border-[#D4BFA0] rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C4A06A] focus:border-transparent text-base transition-all"
         />
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setSelected(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-              selected === cat
-                ? "bg-[#6B3D14] text-white shadow-sm"
-                : "bg-[#EDE3CF] text-[#6B3D14] hover:bg-[#D4BFA0]"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
       </div>
 
       <a

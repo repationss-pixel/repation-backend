@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RecherchePage() {
   const restaurants = await prisma.restaurant.findMany({
-    select: { id: true, nom: true, adresse: true, categorie: true, slug: true, photoUrl: true },
+    select: { id: true, nom: true, adresse: true, slug: true, photoUrl: true, latitude: true, longitude: true },
     orderBy: { nom: "asc" },
   });
 

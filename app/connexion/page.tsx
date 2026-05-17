@@ -4,11 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-type UserType = "convive" | "restaurateur";
-
 function ConnexionForm() {
   const searchParams = useSearchParams();
-  const [userType, setUserType] = useState<UserType>("convive");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,12 +22,10 @@ function ConnexionForm() {
     setLoading(true);
 
     try {
-      const body = { email: email.trim(), password, type: userType };
-
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await res.json();
@@ -40,11 +35,7 @@ function ConnexionForm() {
         return;
       }
 
-      if (data.user.type === "RESTAURATEUR") {
-        window.location.href = "/dashboard/restaurateur";
-      } else {
-        window.location.href = "/mon-compte";
-      }
+      window.location.href = data.redirect;
     } catch {
       setError("Impossible de contacter le serveur.");
     } finally {
@@ -100,37 +91,6 @@ function ConnexionForm() {
           }}>
             Se connecter
           </h1>
-
-          {/* Toggle convive / restaurateur */}
-          <div style={{
-            display: "flex",
-            border: "1px solid #D4BFA0",
-            borderRadius: "10px",
-            overflow: "hidden",
-            marginBottom: "24px",
-          }}>
-            {(["convive", "restaurateur"] as UserType[]).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => { setUserType(t); setError(""); }}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  background: userType === t ? "#8B5E3C" : "transparent",
-                  color: userType === t ? "#F2EAD9" : "#7A6A55",
-                  fontFamily: "inherit",
-                }}
-              >
-                {t === "convive" ? "👤 Convive" : "🍴 Restaurateur"}
-              </button>
-            ))}
-          </div>
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
