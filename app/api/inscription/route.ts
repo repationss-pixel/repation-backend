@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { UserType, RestaurantCategorie } from "@prisma/client";
+import { UserType } from "@prisma/client";
 import { sendWelcomeRestaurantEmail, sendWelcomeConviveEmail } from "@/lib/email";
 import bcrypt from "bcryptjs";
 
@@ -10,18 +10,11 @@ interface InscriptionBody {
   password?: string;
   phone?: string;
   type: "particulier" | "restaurateur";
-  categorie?: "RESTAURANT" | "FAST_FOOD" | "CAFE";
   adresse?: string;
   latitude?: number;
   longitude?: number;
   photoUrl?: string;
 }
-
-const CATEGORIES_VALIDES: RestaurantCategorie[] = [
-  RestaurantCategorie.RESTAURANT,
-  RestaurantCategorie.FAST_FOOD,
-  RestaurantCategorie.CAFE,
-];
 
 const PHONE_RE = /^(\+33|0)[1-9](\d{8})$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,7 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Corps de requête invalide." }, { status: 400 });
   }
 
-  const { prenom, email, password, phone, type, categorie, adresse, latitude, longitude, photoUrl } = body;
+  const { prenom, email, password, phone, type, adresse, latitude, longitude, photoUrl } = body;
 
   // ── Validation commune ──────────────────────────────────────────────────────
   if (!prenom?.trim()) {
@@ -134,11 +127,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (userType === UserType.RESTAURATEUR) {
-      const categorieEnum =
-        categorie && CATEGORIES_VALIDES.includes(categorie as RestaurantCategorie)
-          ? (categorie as RestaurantCategorie)
-          : RestaurantCategorie.RESTAURANT;
-
       const slug = await uniqueSlug(toSlug(prenom.trim()));
       const restaurant = await prisma.restaurant.create({
         data: {
@@ -146,7 +134,6 @@ export async function POST(req: NextRequest) {
           adresse: adresse?.trim() || "À compléter",
           latitude: latitude ?? 0,
           longitude: longitude ?? 0,
-          categorie: categorieEnum,
           slug,
           photoUrl: photoUrl ?? null,
           restaurateurId: user.id,

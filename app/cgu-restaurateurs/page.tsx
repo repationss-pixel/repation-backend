@@ -60,22 +60,15 @@ export default function CGURestaurateurs() {
         <Section titre="4. Facturation — Restaurateurs">
           <ul>
             <li>
-              La facturation Repation n'est activée qu'à partir de <strong>5 visites certifiées</strong> par mois
+              La facturation Repation n'est activée qu'à partir du <strong>5ème client amené dans le mois</strong>{' '}
               (visite certifiée = double scan QR de deux convives distincts).
             </li>
             <li>
-              Tarifs par client amené (HT, TVA 20 % en sus) :
-              <ul className="mt-2 ml-4">
-                <li>Restaurant / Brasserie / Bistrot : <strong>2,40 €/client</strong></li>
-                <li>Fast-food / Snack : <strong>1,50 €/client</strong></li>
-                <li>Café / Bar / Boulangerie : <strong>1,00 €/client</strong></li>
-              </ul>
+              À partir du 5ème client certifié, Repation facture <strong>1 € par client (HT, TVA 20 % en sus)</strong>.
+              Les 4 premiers clients du mois sont toujours gratuits.
             </li>
             <li>
               Le prélèvement est automatique en fin de mois via la carte bancaire enregistrée.
-            </li>
-            <li>
-              Toute fausse déclaration de catégorie d'établissement entraîne la résiliation immédiate du partenariat.
             </li>
           </ul>
         </Section>

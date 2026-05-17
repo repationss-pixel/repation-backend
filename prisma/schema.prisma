@@ -57,7 +57,7 @@ model Restaurant {
   adresse          String
   latitude         Float
   longitude        Float
-  categorie        RestaurantCategorie
+  categorie        RestaurantCategorie?
   slug             String               @unique
   photoUrl         String?
   ticketMoyen      Float         @default(35)

@@ -6,13 +6,6 @@ import dynamic from "next/dynamic";
 const RestaurantCardSetup = dynamic(() => import("./RestaurantCardSetup"), { ssr: false });
 
 type UserType = "particulier" | "restaurateur";
-type CategorieRestaurant = "RESTAURANT" | "FAST_FOOD" | "CAFE";
-
-const CATEGORIES: { value: CategorieRestaurant; label: string }[] = [
-  { value: "RESTAURANT", label: "Restaurant / Brasserie / Bistrot" },
-  { value: "FAST_FOOD",  label: "Fast-food / Snack"                },
-  { value: "CAFE",       label: "Café / Bar / Boulangerie"          },
-];
 
 interface FormData {
   prenom: string;
@@ -20,7 +13,6 @@ interface FormData {
   password: string;
   phone: string;
   type: UserType;
-  categorie: CategorieRestaurant;
   adresse: string;
   latitude: number | null;
   longitude: number | null;
@@ -52,7 +44,6 @@ export default function InscriptionForm() {
     password: "",
     phone: "",
     type: "particulier",
-    categorie: "RESTAURANT",
     adresse: "",
     latitude: null,
     longitude: null,
@@ -153,7 +144,6 @@ export default function InscriptionForm() {
               password: formData.password,
               phone: formData.phone,
               type: formData.type,
-              categorie: formData.categorie,
               adresse: formData.adresse,
               latitude: formData.latitude,
               longitude: formData.longitude,
@@ -322,22 +312,6 @@ export default function InscriptionForm() {
       {/* Champs restaurateur */}
       {formData.type === "restaurateur" && (
         <>
-          {/* Catégorie */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Catégorie de l&apos;établissement <span className="text-[#1D9E75]">*</span>
-            </label>
-            <select value={formData.categorie}
-              onChange={(e) => setFormData((d) => ({ ...d, categorie: e.target.value as CategorieRestaurant }))}
-              className="input-field appearance-none bg-white"
-            >
-              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-            <p className="text-xs text-gray-400 mt-1.5">
-              Le tarif Repation est calculé selon la catégorie. Toute fausse déclaration entraîne la résiliation.
-            </p>
-          </div>
-
           {/* Adresse */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
