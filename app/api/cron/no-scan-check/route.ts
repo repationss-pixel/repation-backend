@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ReservationStatut } from '@prisma/client'
 import Stripe from 'stripe'
-import { sendScanReminderEmail, sendNoScanChargeEmail } from '@/lib/email'
+import {
+  sendPreReminderEmail,
+  sendScanReminderEmail,
+  sendNoScanChargeEmail,
+} from '@/lib/email'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
 
-// Cron toutes les 10 minutes
-// vercel.json : { "crons": [{ "path": "/api/cron/no-scan-check", "schedule": "*/10 * * * *" }] }
+// Cron toutes les heures (plan Vercel gratuit)
+// vercel.json : { "crons": [{ "path": "/api/cron/no-scan-check", "schedule": "0 * * * *" }] }
 
 function isAuthorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
@@ -23,34 +27,72 @@ export async function GET(req: NextRequest) {
   }
 
   const now = new Date()
-  const t20 = new Date(now.getTime() - 20 * 60 * 1000)
-  const t30 = new Date(now.getTime() - 30 * 60 * 1000)
 
-  console.log('[cron/no-scan-check] démarrage', {
-    now: now.toISOString(),
-    t20: t20.toISOString(),
-    t30: t30.toISOString(),
+  // Fenêtres de temps
+  const pre28  = new Date(now.getTime() + 28 * 60 * 1000)  // +28 min
+  const pre32  = new Date(now.getTime() + 32 * 60 * 1000)  // +32 min
+  const post8  = new Date(now.getTime() - 8  * 60 * 1000)  // -8 min
+  const post12 = new Date(now.getTime() - 12 * 60 * 1000)  // -12 min
+  const t30    = new Date(now.getTime() - 30 * 60 * 1000)  // -30 min
+
+  console.log('[cron/no-scan-check] démarrage', { now: now.toISOString() })
+
+  const preReminderResults: { reservationId: string; status: string; error?: string }[] = []
+  const scanReminderResults: { reservationId: string; status: string; error?: string }[] = []
+  const chargeResults:       { reservationId: string; status: string; error?: string }[] = []
+
+  // ── 1. RAPPEL ANNULATION (T-30 min) ──────────────────────────────────────────
+  // Créneau dans 28-32 min, rappel pas encore envoyé
+  const toPreRemind = await prisma.reservation.findMany({
+    where: {
+      statut: { in: STATUTS_ACTIFS },
+      preReminderSentAt: null,
+      creneau: { gte: pre28, lte: pre32 },
+    },
+    include: { user: true, restaurant: { select: { nom: true } } },
   })
 
-  const reminderResults: { reservationId: string; status: string; error?: string }[] = []
-  const chargeResults: { reservationId: string; status: string; error?: string }[] = []
+  console.log(`[cron/no-scan-check] rappels pré-annulation : ${toPreRemind.length}`)
 
-  // ── 1. Rappels (T+20 min) ─────────────────────────────────────────────────
-  // Créneau passé depuis 20-30 min, rappel pas encore envoyé, pas de scan validé
-  const toRemind = await prisma.reservation.findMany({
+  for (const r of toPreRemind) {
+    try {
+      await sendPreReminderEmail(
+        r.user.email,
+        r.user.prenom,
+        r.restaurant.nom,
+        r.creneau.toISOString()
+      )
+      await prisma.reservation.update({
+        where: { id: r.id },
+        data: { preReminderSentAt: now },
+      })
+      console.log(`[cron/no-scan-check] pré-rappel envoyé ✓ reservation=${r.id}`)
+      preReminderResults.push({ reservationId: r.id, status: 'pre-reminder-sent' })
+    } catch (err) {
+      console.error(`[cron/no-scan-check] erreur pré-rappel reservation=${r.id}:`, JSON.stringify(err))
+      preReminderResults.push({
+        reservationId: r.id,
+        status: 'pre-reminder-error',
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  // ── 2. RAPPEL QR CODE (T+10 min) ─────────────────────────────────────────────
+  // Créneau passé depuis 8-12 min, pas de scan validé, rappel pas encore envoyé
+  const toScanRemind = await prisma.reservation.findMany({
     where: {
       statut: { in: STATUTS_ACTIFS },
       scanReminderSentAt: null,
-      creneau: { gte: t30, lt: t20 },
+      creneau: { gte: post12, lte: post8 },
       checkins: { none: { validated: true } },
     },
     include: { user: true, restaurant: { select: { nom: true } } },
   })
 
-  console.log(`[cron/no-scan-check] rappels à envoyer : ${toRemind.length}`)
+  console.log(`[cron/no-scan-check] rappels QR code : ${toScanRemind.length}`)
 
-  for (const r of toRemind) {
-    console.log(`[cron/no-scan-check] envoi rappel → reservation=${r.id} user=${r.user.email}`)
+  for (const r of toScanRemind) {
     try {
       await sendScanReminderEmail(
         r.user.email,
@@ -58,24 +100,24 @@ export async function GET(req: NextRequest) {
         r.restaurant.nom,
         r.creneau.toISOString()
       )
-      console.log(`[cron/no-scan-check] rappel envoyé ✓ reservation=${r.id}`)
-
       await prisma.reservation.update({
         where: { id: r.id },
         data: { scanReminderSentAt: now },
       })
-      reminderResults.push({ reservationId: r.id, status: 'reminder-sent' })
+      console.log(`[cron/no-scan-check] rappel QR envoyé ✓ reservation=${r.id}`)
+      scanReminderResults.push({ reservationId: r.id, status: 'scan-reminder-sent' })
     } catch (err) {
-      console.error(`[cron/no-scan-check] erreur rappel reservation=${r.id}:`, JSON.stringify(err))
-      reminderResults.push({
+      console.error(`[cron/no-scan-check] erreur rappel QR reservation=${r.id}:`, JSON.stringify(err))
+      scanReminderResults.push({
         reservationId: r.id,
-        status: 'reminder-error',
+        status: 'scan-reminder-error',
         error: err instanceof Error ? err.message : String(err),
       })
     }
   }
 
-  // ── 2. Prélèvements (T+30 min) ────────────────────────────────────────────
+  // ── 3. PRÉLÈVEMENT ABSENCE (T+30 min) ────────────────────────────────────────
+  // Créneau passé depuis plus de 30 min, pas de scan validé
   const toCharge = await prisma.reservation.findMany({
     where: {
       statut: { in: STATUTS_ACTIFS },
@@ -85,12 +127,11 @@ export async function GET(req: NextRequest) {
     include: { user: true, restaurant: { select: { nom: true } } },
   })
 
-  console.log(`[cron/no-scan-check] prélèvements à traiter : ${toCharge.length}`)
+  console.log(`[cron/no-scan-check] prélèvements absence : ${toCharge.length}`)
 
   for (const r of toCharge) {
-    console.log(`[cron/no-scan-check] traitement absence → reservation=${r.id} user=${r.user.email}`)
     try {
-      // Marque NO_SHOW immédiatement pour éviter un double-prélèvement
+      // Marquer NO_SHOW immédiatement pour éviter tout double-prélèvement
       await prisma.reservation.update({
         where: { id: r.id },
         data: { statut: ReservationStatut.NO_SHOW },
@@ -107,8 +148,6 @@ export async function GET(req: NextRequest) {
           metadata: { reservationId: r.id, userId: r.user.id },
         })
         console.log(`[cron/no-scan-check] stripe 1€ prélevé ✓ reservation=${r.id}`)
-      } else {
-        console.log(`[cron/no-scan-check] pas de payment method — absence non facturée reservation=${r.id}`)
       }
 
       await sendNoScanChargeEmail(
@@ -117,7 +156,6 @@ export async function GET(req: NextRequest) {
         r.restaurant.nom,
         r.creneau.toISOString()
       )
-      console.log(`[cron/no-scan-check] email absence envoyé ✓ reservation=${r.id}`)
 
       chargeResults.push({
         reservationId: r.id,
@@ -134,13 +172,15 @@ export async function GET(req: NextRequest) {
   }
 
   console.log('[cron/no-scan-check] terminé', {
-    reminders: reminderResults.length,
+    preReminders: preReminderResults.length,
+    scanReminders: scanReminderResults.length,
     charges: chargeResults.length,
   })
 
   return NextResponse.json({
     processedAt: now.toISOString(),
-    reminders: reminderResults,
+    preReminders: preReminderResults,
+    scanReminders: scanReminderResults,
     charges: chargeResults,
   })
 }

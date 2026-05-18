@@ -3,5 +3,10 @@
     "enabled": true,
     "autoAlias": true
   },
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/cron/no-scan-check",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

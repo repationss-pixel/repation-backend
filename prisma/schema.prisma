@@ -90,7 +90,8 @@ model Reservation {
   annulationDeadline DateTime?         // 20 minutes avant le créneau
   statut             ReservationStatut @default(EN_ATTENTE)
   visitId            String?           // Partagé avec la réservation partenaire lors d'une visite certifiée
-  scanReminderSentAt DateTime?         // Horodatage du rappel QR envoyé à T+20 min
+  preReminderSentAt  DateTime?         // Horodatage du rappel annulation envoyé à T-30 min
+  scanReminderSentAt DateTime?         // Horodatage du rappel QR envoyé à T+10 min
   createdAt          DateTime          @default(now())
 
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -435,28 +435,62 @@ export async function sendWelcomeConviveEmail(to: string, prenom: string) {
   return send(to, '🎉 Bienvenue sur Repation !', html)
 }
 
-// ─── Rappel scan QR (T+20 min) ────────────────────────────────────────────────
+// ─── Rappel annulation (T-30 min) ─────────────────────────────────────────────
+
+export async function sendPreReminderEmail(
+  to: string, prenom: string, restaurantNom: string, creneau: string
+) {
+  const html = layout(
+    '⚠️ Votre repas Repation dans 30 minutes', '#f59e0b',
+    `<p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;">Bonjour <strong>${prenom}</strong>,</p>
+     <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6;">
+       Votre table chez <strong style="color:#1D9E75;">${restaurantNom}</strong>
+       est dans <strong>30 minutes</strong>
+       (le <strong>${fmtDate(creneau)} à ${fmtHeure(creneau)}</strong>).
+     </p>
+     <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin-bottom:24px;">
+       <p style="margin:0 0 8px;font-size:14px;color:#92400e;font-weight:700;">
+         Vous ne pouvez pas venir ?
+       </p>
+       <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;">
+         Annulez maintenant — il vous reste environ <strong>10 minutes pour annuler gratuitement</strong>.
+         Passé ce délai, <strong>1€ sera prélevé automatiquement</strong> sur votre carte.
+       </p>
+     </div>
+     <div style="text-align:center;margin-bottom:24px;">
+       <a href="https://www.repation.fr/mon-compte"
+         style="display:inline-block;background:#1D9E75;color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;padding:12px 28px;border-radius:10px;">
+         Gérer ma réservation →
+       </a>
+     </div>
+     <p style="margin:0;font-size:14px;color:#6b7280;">À tout à l'heure,<br/>L'équipe Repation 🍽️</p>`
+  )
+  return send(to, '⚠️ Votre repas Repation dans 30 minutes', html)
+}
+
+// ─── Rappel scan QR (T+10 min) ────────────────────────────────────────────────
 
 export async function sendScanReminderEmail(
   to: string, prenom: string, restaurantNom: string, creneau: string
 ) {
   const html = layout(
-    '⏰ Rappel : confirmez votre présence', '#f59e0b',
+    '📱 Scannez le QR code maintenant !', '#f59e0b',
     `<p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;">Bonjour <strong>${prenom}</strong>,</p>
      <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6;">
-       Il vous reste <strong>10 minutes</strong> pour scanner le QR code de votre table Repation chez
-       <strong style="color:#1D9E75;">${restaurantNom}</strong>
+       Vous êtes chez <strong style="color:#1D9E75;">${restaurantNom}</strong> ?
+       Scannez le QR code de l'établissement <strong>immédiatement</strong>
+       pour confirmer votre présence
        (créneau du <strong>${fmtDate(creneau)} à ${fmtHeure(creneau)}</strong>).
      </p>
      <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
        <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;">
-         ⚠️ Sans scan du QR code dans les 10 prochaines minutes,
+         ⚠️ Sans scan dans les <strong>20 prochaines minutes</strong>,
          <strong>1€ sera prélevé automatiquement</strong> sur votre carte.
        </p>
      </div>
      <p style="margin:0;font-size:14px;color:#6b7280;">L'équipe Repation 🍽️</p>`
   )
-  return send(to, '⏰ Rappel : confirmez votre présence Repation', html)
+  return send(to, '📱 Scannez le QR code maintenant !', html)
 }
 
 // ─── Prélèvement absence non justifiée (T+30 min) ────────────────────────────
