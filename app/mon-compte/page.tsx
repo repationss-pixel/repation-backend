@@ -232,6 +232,7 @@ export default async function MonComptePage() {
                         hasCompanion={hasCompanion}
                         companion={companion}
                         creneau={r.creneau.toISOString()}
+                        restaurantNom={r.restaurant.nom}
                       />
                     </div>
                   );

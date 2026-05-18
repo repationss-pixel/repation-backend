@@ -7,103 +7,217 @@ interface Props {
   hasCompanion: boolean
   companion: CompanionData | null
   creneau: string
+  restaurantNom: string
 }
 
-function useNow() {
-  const [now, setNow] = useState(Date.now())
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long',
+    timeZone: 'Europe/Paris',
+  })
+}
+
+function fmtHeure(iso: string) {
+  return new Date(iso).toLocaleTimeString('fr-FR', {
+    hour: '2-digit', minute: '2-digit',
+    timeZone: 'Europe/Paris',
+  })
+}
+
+function MatchAnimation({ companion, creneau, restaurantNom }: {
+  companion: CompanionData
+  creneau: string
+  restaurantNom: string
+}) {
+  const storageKey = `companion_shown_${creneau}`
+
+  const [phase, setPhase] = useState<'merge' | 'reveal'>(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem(storageKey)) return 'reveal'
+    return 'merge'
+  })
+
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
+    if (phase === 'merge') {
+      const t = setTimeout(() => {
+        setPhase('reveal')
+        sessionStorage.setItem(storageKey, '1')
+      }, 1400)
+      return () => clearTimeout(t)
+    }
   }, [])
-  return now
-}
 
-function Countdown({ targetMs }: { targetMs: number }) {
-  const now = useNow()
-  const rem = Math.max(0, targetMs - now)
-  const mins = Math.floor(rem / 60000)
-  const secs = Math.floor((rem % 60000) / 1000)
-  return <span className="font-bold tabular-nums text-[#1D9E75]">{mins > 0 ? `${mins} min ${secs.toString().padStart(2, '0')} s` : `${secs} s`}</span>
-}
-
-function MatchBanner() {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => { setTimeout(() => setVisible(true), 100) }, [])
   return (
-    <div
-      className="flex items-center gap-2 px-4 py-3 rounded-2xl transition-all duration-700"
-      style={{
-        background: 'linear-gradient(135deg, #e6f7f1 0%, #d0f0e4 100%)',
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(8px)',
-      }}
-    >
-      <span className="text-lg" style={{ animation: 'spin-once 0.6s ease-out 0.3s both' }}>✨</span>
-      <div>
-        <p className="text-sm font-bold text-[#1D9E75]">Table complète !</p>
-        <p className="text-xs text-gray-500">Vous découvrirez votre convive 20 minutes avant votre repas.</p>
-      </div>
-      <style>{`@keyframes spin-once{from{transform:rotate(-180deg) scale(0)}to{transform:rotate(0deg) scale(1)}}`}</style>
+    <div style={{ marginTop: '12px' }}>
+      <style>{`
+        @keyframes slideFromLeft {
+          from { transform: translateX(-32px); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes slideFromRight {
+          from { transform: translateX(32px); opacity: 0; }
+          to   { transform: translateX(0);   opacity: 1; }
+        }
+        @keyframes sparkPop {
+          0%   { transform: scale(0) rotate(-40deg); opacity: 0; }
+          55%  { transform: scale(1.5) rotate(15deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0);  }
+        }
+        @keyframes matchBanner {
+          0%   { opacity: 0; transform: scale(0.94); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+
+      {/* Phase 1 : animation des 2 cercles */}
+      {phase === 'merge' && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+          padding: '20px 0',
+        }}>
+          {/* Cercle gauche */}
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%',
+            background: '#F2EAD9', border: '2px solid #D4BFA0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '22px',
+            animation: 'slideFromLeft 0.55s cubic-bezier(0.22,1,0.36,1) forwards',
+          }}>
+            👤
+          </div>
+
+          {/* Étincelle centrale */}
+          <div style={{
+            fontSize: '24px', lineHeight: 1,
+            animation: 'sparkPop 0.45s cubic-bezier(0.22,1,0.36,1) 0.55s both',
+          }}>
+            ✨
+          </div>
+
+          {/* Cercle droit */}
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%',
+            background: '#F2EAD9', border: '2px solid #D4BFA0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '22px',
+            animation: 'slideFromRight 0.55s cubic-bezier(0.22,1,0.36,1) forwards',
+          }}>
+            👤
+          </div>
+        </div>
+      )}
+
+      {/* Phase 2 : profil révélé */}
+      {phase === 'reveal' && (
+        <div style={{ animation: 'fadeUp 0.45s ease-out forwards' }}>
+          {/* Banner "Table complète" */}
+          <div style={{
+            background: '#F2EAD9', border: '1px solid #D4BFA0',
+            borderRadius: '12px', padding: '10px 14px', marginBottom: '10px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            animation: 'matchBanner 0.4s ease-out forwards',
+          }}>
+            <span style={{ fontSize: '16px' }}>✨</span>
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#8B5E3C' }}>
+              Votre table est complète !
+            </p>
+          </div>
+
+          {/* Carte profil du convive */}
+          <div style={{
+            background: '#FBF5E6', border: '1px solid #D4BFA0',
+            borderRadius: '12px', padding: '14px',
+            display: 'flex', alignItems: 'flex-start', gap: '12px',
+          }}>
+            {/* Avatar */}
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%', overflow: 'hidden',
+              background: '#F2EAD9', border: '2px solid #D4BFA0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              {companion.photoUrl
+                ? <img src={companion.photoUrl} alt={companion.prenom} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '20px', fontWeight: 700, color: '#8B5E3C' }}>{companion.prenom[0].toUpperCase()}</span>
+              }
+            </div>
+
+            {/* Infos */}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 700, color: '#1C1009' }}>
+                {companion.prenom}
+                {companion.age && (
+                  <span style={{ fontWeight: 400, color: '#7A6A55', marginLeft: '6px', fontSize: '13px' }}>
+                    {companion.age} ans
+                  </span>
+                )}
+              </p>
+              {companion.profession && (
+                <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#7A6A55' }}>{companion.profession}</p>
+              )}
+              {companion.bio && (
+                <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#8B5E3C', fontStyle: 'italic' }}>
+                  &ldquo;{companion.bio}&rdquo;
+                </p>
+              )}
+              {companion.interets && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                  {companion.interets.split(',').map(i => i.trim()).filter(Boolean).map(interet => (
+                    <span key={interet} style={{
+                      padding: '2px 8px', background: '#F2EAD9',
+                      color: '#8B5E3C', fontSize: '11px', borderRadius: '20px',
+                      border: '1px solid #D4BFA0',
+                    }}>{interet}</span>
+                  ))}
+                </div>
+              )}
+              <p style={{ margin: 0, fontSize: '12px', color: '#7A6A55', lineHeight: 1.5 }}>
+                Vous rencontrerez{' '}
+                <strong style={{ color: '#1C1009' }}>{companion.prenom}</strong>{' '}
+                le {fmtDate(creneau)} à {fmtHeure(creneau)} chez{' '}
+                <strong style={{ color: '#1C1009' }}>{restaurantNom}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-export default function CompanionCard({ hasCompanion, companion, creneau }: Props) {
-  const now = useNow()
-  const revealMs = new Date(creneau).getTime() - 20 * 60 * 1000
-  const isRevealed = now >= revealMs
-
+export default function CompanionCard({ hasCompanion, companion, creneau, restaurantNom }: Props) {
   if (!hasCompanion) {
     return (
-      <p className="text-xs text-gray-400 mt-2 italic">En attente d&apos;un convive…</p>
+      <p style={{ fontSize: '12px', color: '#B0A090', marginTop: '8px', fontStyle: 'italic' }}>
+        En attente d&apos;un convive…
+      </p>
+    )
+  }
+
+  // Companion existe mais profil incomplet (ne devrait pas arriver)
+  if (!companion) {
+    return (
+      <div style={{
+        marginTop: '12px', background: '#F2EAD9', border: '1px solid #D4BFA0',
+        borderRadius: '12px', padding: '10px 14px',
+        display: 'flex', alignItems: 'center', gap: '8px',
+      }}>
+        <span>✨</span>
+        <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#8B5E3C' }}>
+          Votre table est complète !
+        </p>
+      </div>
     )
   }
 
   return (
-    <div className="mt-3 space-y-2">
-      <MatchBanner />
-
-      {!isRevealed ? (
-        /* Silhouette floue + compte à rebours */
-        <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl border border-gray-100">
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0" style={{ filter: 'blur(2px)' }}>
-            <svg viewBox="0 0 24 24" fill="#9ca3af" className="w-6 h-6">
-              <path d="M12 12c2.7 0 4-1.8 4-4s-1.3-4-4-4-4 1.8-4 4 1.3 4 4 4zm0 2c-2.7 0-8 1.3-8 4v1h16v-1c0-2.7-5.3-4-8-4z"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-gray-500" style={{ filter: 'blur(3px)', userSelect: 'none' }}>Votre convive</p>
-            <p className="text-xs text-gray-400">Profil révélé dans <Countdown targetMs={revealMs} /></p>
-          </div>
-        </div>
-      ) : (
-        /* Profil révélé */
-        companion && (
-          <div className="flex items-start gap-3 px-4 py-3 bg-[#F0FAF5] rounded-2xl border border-[#1D9E75]/20">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1D9E75]/20 flex items-center justify-center shrink-0">
-              {companion.photoUrl
-                ? <img src={companion.photoUrl} alt={companion.prenom} className="w-full h-full object-cover" />
-                : <span className="text-lg font-bold text-[#1D9E75]">{companion.prenom[0].toUpperCase()}</span>
-              }
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-gray-900 text-sm">
-                {companion.prenom}
-                {companion.age && <span className="font-normal text-gray-500 ml-1">{companion.age} ans</span>}
-              </p>
-              {companion.profession && <p className="text-xs text-gray-500">{companion.profession}</p>}
-              {companion.bio && <p className="text-xs text-gray-600 mt-1 italic">&ldquo;{companion.bio}&rdquo;</p>}
-              {companion.interets && (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {companion.interets.split(',').map(i => i.trim()).filter(Boolean).map(interet => (
-                    <span key={interet} className="px-2 py-0.5 bg-[#1D9E75]/10 text-[#1D9E75] text-xs rounded-full">{interet}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      )}
-    </div>
+    <MatchAnimation
+      companion={companion}
+      creneau={creneau}
+      restaurantNom={restaurantNom}
+    />
   )
 }

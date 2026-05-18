@@ -115,18 +115,38 @@ export async function POST(req: NextRequest) {
     console.error('[email/confirmation] ERREUR COMPLETE:', JSON.stringify(err))
   }
 
-  // Notification au restaurateur uniquement quand la table est complète (2 convives)
-  if (restaurant.restaurateurId) {
-    try {
-      const reservationsSurCreneau = await prisma.reservation.count({
+  // Vérifier si la table est complète (2 convives sur ce créneau)
+  let partner: {
+    prenom: string; photoUrl: string | null; age: number | null
+    profession: string | null; bio: string | null; interets: string | null
+  } | null = null
+
+  try {
+    const reservationsSurCreneau = await prisma.reservation.count({
+      where: {
+        restaurantId,
+        creneau: creneauDate,
+        statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
+      },
+    })
+
+    if (reservationsSurCreneau === 2) {
+      // Récupérer le profil de l'autre convive
+      const partnerRes = await prisma.reservation.findFirst({
         where: {
           restaurantId,
           creneau: creneauDate,
+          userId: { not: userId },
           statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
         },
+        select: {
+          user: { select: { prenom: true, photoUrl: true, age: true, profession: true, bio: true, interets: true } },
+        },
       })
+      partner = partnerRes?.user ?? null
 
-      if (reservationsSurCreneau === 2) {
+      // Email au restaurateur si lié
+      if (restaurant.restaurateurId) {
         const restaurateur = await prisma.user.findUnique({
           where: { id: restaurant.restaurateurId },
           select: { email: true },
@@ -141,10 +161,10 @@ export async function POST(req: NextRequest) {
           console.log('[email/restaurant-notification] table complète, envoyé à', restaurateur.email)
         }
       }
-    } catch (err) {
-      console.error('[email/restaurant-notification] ERREUR COMPLETE:', JSON.stringify(err))
     }
+  } catch (err) {
+    console.error('[email/restaurant-notification] ERREUR COMPLETE:', JSON.stringify(err))
   }
 
-  return NextResponse.json({ reservation }, { status: 201 })
+  return NextResponse.json({ reservation, partner }, { status: 201 })
 }
