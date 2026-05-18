@@ -8,7 +8,9 @@
       "Bash(npm install *)",
       "Bash(sudo npm *)",
       "Bash(npm list *)",
-      "Bash(grep -v \"^.*{$\")"
+      "Bash(grep -v \"^.*{$\")",
+      "Bash(git add *)",
+      "Bash(git push *)"
     ]
   }
 }
