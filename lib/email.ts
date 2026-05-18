@@ -110,6 +110,14 @@ export async function sendConfirmationEmail(
          Sans scan, votre réservation ne sera pas validée et 1€ vous sera automatiquement débité.
        </p>
      </div>
+     <div style="background:#FFF8EE;border:1px solid #C4A06A;border-radius:8px;padding:16px;margin-bottom:20px;text-align:center;">
+       <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#2C1A0A;">
+         📱 N'oubliez pas de scanner le QR code !
+       </p>
+       <p style="margin:0;font-size:13px;color:#7A6A55;line-height:1.6;">
+         À votre arrivée au restaurant, scannez le QR code présent sur votre table pour confirmer votre présence. Sans scan, un prélèvement automatique de <strong>1€</strong> sera effectué sur votre carte bancaire.
+       </p>
+     </div>
      <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 16px;margin-bottom:28px;">
        <p style="margin:0;font-size:13px;color:#854d0e;line-height:1.5;">
          ⚠️ <strong>Annulation gratuite</strong> jusqu'à 20 minutes avant votre réservation.
