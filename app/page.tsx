@@ -68,11 +68,9 @@ export default function Home() {
           {/* Spacer gauche */}
           <div className="w-48" />
 
-          {/* Texte centré en absolu */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: '22px', color: '#8B5E3C' }}>
-              Repation
-            </span>
+          {/* Logo centré en absolu */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+            <img src="/logo-repation.png" alt="Repation" style={{ height: '44px', width: 'auto' }} />
           </div>
 
           {/* Nav droite */}
