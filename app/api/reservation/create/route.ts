@@ -115,21 +115,31 @@ export async function POST(req: NextRequest) {
     console.error('[email/confirmation] ERREUR COMPLETE:', JSON.stringify(err))
   }
 
-  // Notification au restaurateur si le lien existe
+  // Notification au restaurateur uniquement quand la table est complète (2 convives)
   if (restaurant.restaurateurId) {
     try {
-      const restaurateur = await prisma.user.findUnique({
-        where: { id: restaurant.restaurateurId },
-        select: { email: true },
+      const reservationsSurCreneau = await prisma.reservation.count({
+        where: {
+          restaurantId,
+          creneau: creneauDate,
+          statut: { notIn: [ReservationStatut.ANNULEE, ReservationStatut.NO_SHOW] },
+        },
       })
-      if (restaurateur) {
-        await sendRestaurantNotificationEmail(
-          restaurateur.email,
-          reservation.restaurant.nom,
-          creneauDate.toISOString(),
-          reservation.restaurant.slug
-        )
-        console.log('[email/restaurant-notification] envoyé à', restaurateur.email)
+
+      if (reservationsSurCreneau === 2) {
+        const restaurateur = await prisma.user.findUnique({
+          where: { id: restaurant.restaurateurId },
+          select: { email: true },
+        })
+        if (restaurateur) {
+          await sendRestaurantNotificationEmail(
+            restaurateur.email,
+            reservation.restaurant.nom,
+            creneauDate.toISOString(),
+            reservation.restaurant.slug
+          )
+          console.log('[email/restaurant-notification] table complète, envoyé à', restaurateur.email)
+        }
       }
     } catch (err) {
       console.error('[email/restaurant-notification] ERREUR COMPLETE:', JSON.stringify(err))

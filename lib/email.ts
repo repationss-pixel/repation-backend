@@ -139,21 +139,16 @@ export async function sendRestaurantNotificationEmail(
   to: string, restaurantNom: string, creneau: string, slug: string
 ) {
   const html = layout(
-    '🍽️ Nouvelle réservation !', '#1D9E75',
+    '🍽️ Table complète chez vous !', '#1D9E75',
     `<p style="margin:0 0 20px;font-size:16px;color:#1a1a1a;">Bonjour,</p>
      <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
-       Une nouvelle table Repation a été réservée dans votre établissement
+       <strong>2 convives ont réservé une table</strong> dans votre établissement
        <strong style="color:#1D9E75;">${restaurantNom}</strong>.
      </p>
      <div style="background:#f0fdf4;border-left:4px solid #1D9E75;border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:24px;">
        <p style="margin:0 0 4px;font-size:13px;color:#166534;font-weight:600;">Date et heure</p>
        <p style="margin:0;font-size:15px;color:#166534;font-weight:700;">
          ${fmtDate(creneau)} à ${fmtHeure(creneau)}
-       </p>
-     </div>
-     <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
-       <p style="margin:0;font-size:14px;color:#374151;">
-         👥 <strong>Deux convives</strong> seront présents à cette table.
        </p>
      </div>
      <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 16px;margin-bottom:28px;">
@@ -175,7 +170,7 @@ export async function sendRestaurantNotificationEmail(
   return resend.emails.send({
     from: FROM,
     to,
-    subject: '🍽️ Nouvelle réservation Repation !',
+    subject: '🍽️ Table complète chez vous !',
     html,
     attachments: [
       { filename: `qr-checkin-${slug}.png`, content: qrCheckinBuffer },
@@ -521,19 +516,23 @@ export async function sendCascadeCancelRestaurantEmail(
   to: string, restaurantNom: string, creneau: string
 ) {
   const html = layout(
-    'ℹ️ Table annulée', '#6b7280',
+    '❌ Annulation de table chez vous', '#ef4444',
     `<p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;">Bonjour,</p>
      <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.6;">
-       La table Repation du <strong>${fmtDate(creneau)} à ${fmtHeure(creneau)}</strong>
-       dans votre établissement <strong style="color:#1D9E75;">${restaurantNom}</strong>
-       a été annulée suite à l'annulation d'un convive.
+       Un convive a annulé sa réservation du <strong>${fmtDate(creneau)} à ${fmtHeure(creneau)}</strong>
+       dans votre établissement <strong style="color:#1D9E75;">${restaurantNom}</strong>.
      </p>
+     <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
+       <p style="margin:0;font-size:13px;color:#991b1b;font-weight:600;">
+         La table est libérée.
+       </p>
+     </div>
      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;margin-bottom:24px;">
        <p style="margin:0;font-size:13px;color:#374151;">
-         Les deux convives ont été informés. Aucune action requise de votre part.
+         Les convives concernés ont été informés. Aucune action requise de votre part.
        </p>
      </div>
      <p style="margin:0;font-size:14px;color:#6b7280;">L'équipe Repation 🍽️</p>`
   )
-  return send(to, 'ℹ️ Table Repation annulée', html)
+  return send(to, '❌ Annulation de table chez vous', html)
 }
